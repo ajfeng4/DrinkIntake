@@ -4,6 +4,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LineChart } from 'react-native-chart-kit';
+import DrinkIntakeHeader from '@/components/DrinkIntakeHeader';
 
 // Placeholder components for different graph types
 const ListView = () => {
@@ -19,16 +20,16 @@ const ListView = () => {
   const maxValue = Math.max(...intakeData.map(item => item.value));
 
   return (
-    <ScrollView style={styles.container}>
-      {intakeData.map((item, index) => (
-        <View key={index} style={styles.row}>
-          <ThemedText style={styles.horizontalTimeLabel}>{item.time}</ThemedText>
-          <View style={styles.barContainer}>
-            <View style={[styles.horizontalBar, { width: `${(item.value / maxValue) * 100}%` }]} />
-          </View>
-        </View>
-      ))}
-    </ScrollView>
+      <ScrollView style={styles.container}>
+        {intakeData.map((item, index) => (
+            <View key={index} style={styles.row}>
+              <ThemedText style={styles.horizontalTimeLabel}>{item.time}</ThemedText>
+              <View style={styles.barContainer}>
+                <View style={[styles.horizontalBar, { width: `${(item.value / maxValue) * 100}%` }]} />
+              </View>
+            </View>
+        ))}
+      </ScrollView>
   );
 };
 
@@ -48,23 +49,20 @@ const BarGraph = () => {
   const barWidth = (screenWidth - 40) / intakeData.length - 4; // 40 for padding, 4 for gap
 
   return (
-    <View style={styles.container}>
-      <View style={styles.graphContainer}>
-        {intakeData.map((item, index) => (
-          <View key={index} style={styles.barWrapper}>
-            <View style={styles.barBackground}>
-              <View 
-                style={[
-                  styles.verticalBar, 
-                  { height: `${(item.value / maxValue) * 100}%` }
-                ]} 
-              />
-            </View>
-            <ThemedText style={styles.verticalTimeLabel}>{item.time}</ThemedText>
-          </View>
-        ))}
+      <View style={styles.container}>
+        <View style={styles.graphContainer}>
+          {intakeData.map((item, index) => (
+              <View key={index} style={styles.barWrapper}>
+                <View style={styles.barBackground}>
+                  <View
+                      style={[styles.verticalBar, { height: `${(item.value / maxValue) * 100}%` }]}
+                  />
+                </View>
+                <ThemedText style={styles.verticalTimeLabel}>{item.time}</ThemedText>
+              </View>
+          ))}
+        </View>
       </View>
-    </View>
   );
 };
 
@@ -93,81 +91,81 @@ const LineGraph = () => {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={() => setTooltipPos({ ...tooltipPos, visible: false })}>
-      <View style={{ 
-        backgroundColor: 'white', 
-        borderRadius: 16, 
-        paddingTop: 16,
-        paddingBottom: 16,
-        paddingLeft: 0,
-        paddingRight: 16,
-        marginVertical: 8 
-      }}>
-        <LineChart
-          data={data}
-          width={screenWidth}
-          height={280}
-          chartConfig={{
-            backgroundColor: "white",
-            backgroundGradientFrom: "white",
-            backgroundGradientTo: "white",
-            decimalPlaces: 0,
-            color: (opacity = 1) => `rgba(50, 141, 216, ${opacity})`,
-            labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-            style: { borderRadius: 16 },
-            propsForDots: {
-              r: "6",
-              strokeWidth: "2",
-              stroke: "#328DD8"
-            },
-            propsForBackgroundLines: {
-              strokeDasharray: "",
-              stroke: "#E7E7E7",
-              strokeWidth: 1
-            },
-            propsForVerticalLabels: {
-              fontSize: 10,
-              rotation: 0,
-              offset: 10,
-            },
-            propsForHorizontalLabels: {
-              fontSize: 10,
-            }
-          }}
-          bezier
-          style={{
-            borderRadius: 16,
-            marginLeft: -40,
-          }}
-          withInnerLines={true}
-          withOuterLines={false}
-          yAxisLabel=""
-          yAxisSuffix=""
-          yAxisInterval={1}
-          fromZero={true}
-          segments={4}
-          onDataPointClick={handleDataPointClick}
-          decorator={() => {
-            return tooltipPos.visible ? (
-              <View style={{
-                position: 'absolute',
-                top: tooltipPos.y - 30,
-                left: tooltipPos.x - 30,
-                backgroundColor: 'white',
-                borderRadius: 10,
-                padding: 5,
-                borderWidth: 1,
-                borderColor: '#328DD8',
-              }}>
-                <ThemedText style={{ color: '#328DD8', fontWeight: 'bold' }}>
-                  {tooltipPos.value} ml
-                </ThemedText>
-              </View>
-            ) : null;
-          }}
-        />
-      </View>
-    </TouchableWithoutFeedback>
+      <TouchableWithoutFeedback onPress={() => setTooltipPos({ ...tooltipPos, visible: false })}>
+        <View style={{
+          backgroundColor: 'white',
+          borderRadius: 16,
+          paddingTop: 16,
+          paddingBottom: 16,
+          paddingLeft: 0,
+          paddingRight: 16,
+          marginVertical: 8
+        }}>
+          <LineChart
+              data={data}
+              width={screenWidth}
+              height={280}
+              chartConfig={{
+                backgroundColor: "white",
+                backgroundGradientFrom: "white",
+                backgroundGradientTo: "white",
+                decimalPlaces: 0,
+                color: (opacity = 1) => `rgba(50, 141, 216, ${opacity})`,
+                labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                style: { borderRadius: 16 },
+                propsForDots: {
+                  r: "6",
+                  strokeWidth: "2",
+                  stroke: "#328DD8"
+                },
+                propsForBackgroundLines: {
+                  strokeDasharray: "",
+                  stroke: "#E7E7E7",
+                  strokeWidth: 1
+                },
+                propsForVerticalLabels: {
+                  fontSize: 10,
+                  rotation: 0,
+                  offset: 10,
+                },
+                propsForHorizontalLabels: {
+                  fontSize: 10,
+                }
+              }}
+              bezier
+              style={{
+                borderRadius: 16,
+                marginLeft: -40,
+              }}
+              withInnerLines={true}
+              withOuterLines={false}
+              yAxisLabel=""
+              yAxisSuffix=""
+              yAxisInterval={1}
+              fromZero={true}
+              segments={4}
+              onDataPointClick={handleDataPointClick}
+              decorator={() => {
+                return tooltipPos.visible ? (
+                    <View style={{
+                      position: 'absolute',
+                      top: tooltipPos.y - 30,
+                      left: tooltipPos.x - 30,
+                      backgroundColor: 'white',
+                      borderRadius: 10,
+                      padding: 5,
+                      borderWidth: 1,
+                      borderColor: '#328DD8',
+                    }}>
+                      <ThemedText style={{ color: '#328DD8', fontWeight: 'bold' }}>
+                        {tooltipPos.value} ml
+                      </ThemedText>
+                    </View>
+                ) : null;
+              }}
+          />
+        </View>
+      </TouchableWithoutFeedback>
   );
 };
 
@@ -202,92 +200,84 @@ const StatisticsScreen = () => {
   const SelectedGraph = icons.find(icon => icon.name === selectedIcon)?.component || ListView;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView 
-        style={styles.container}
-        contentContainerStyle={{
-          paddingTop: insets.top,
-          paddingBottom: insets.bottom + 20,
-          paddingHorizontal: 20,
-        }}
-      >
-        <View style={styles.header}>
-          <View>
-            <ThemedText style={styles.headerSubtitle}>Stay hydrated!</ThemedText>
-            <ThemedText style={styles.headerTitle}>Jane Doe</ThemedText>
-          </View>
-          <View style={styles.notificationIcon}>
-            <TabBarIcon name="notifications-outline" color="#333333" />
-          </View>
-        </View>
-        
-        <View style={styles.iconRow}>
-          {icons.map((icon, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.iconContainer}
-              onPress={() => setSelectedIcon(icon.name)}
-            >
-              <TabBarIcon
-                name={icon.name as any}
-                color={selectedIcon === icon.name ? '#328DD8' : '#000'}
-                size={24}
-              />
-            </TouchableOpacity>
-          ))}
-        </View>
-        
-        <View style={styles.intakeSection}>
-          <ThemedText style={styles.intakeTitle}>Current Intake</ThemedText>
-          <View style={styles.dropdownContainer}>
-            <TouchableOpacity onPress={toggleDropdown} style={styles.dropdown} ref={dropdownRef}>
-              <ThemedText style={styles.dropdownText}>{selectedView}</ThemedText>
-              <TabBarIcon name="chevron-down-outline" size={16} color="#A1CEDC" />
-            </TouchableOpacity>
-          </View>
-        </View>
-        
-        <SelectedGraph />
-        
-        <View style={styles.detailsButton}>
-          <ThemedText style={styles.detailsButtonText}>Details</ThemedText>
-        </View>
-      </ScrollView>
-
-      <Modal
-        visible={isDropdownOpen}
-        transparent={true}
-        animationType="none"
-        onRequestClose={() => setIsDropdownOpen(false)}
-      >
-        <TouchableOpacity 
-          style={styles.modalOverlay} 
-          activeOpacity={1} 
-          onPress={() => setIsDropdownOpen(false)}
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView
+            style={styles.container}
+            contentContainerStyle={{
+              paddingTop: insets.top,
+              paddingBottom: insets.bottom + 20,
+              paddingHorizontal: 20,
+            }}
         >
-          <View style={[styles.dropdownMenu, {
-            position: 'absolute',
-            top: dropdownLayout.y,
-            left: dropdownLayout.x,
-            width: dropdownLayout.width,
-          }]}>
-            <TouchableOpacity onPress={() => selectOption('Day')}>
-              <ThemedText style={styles.dropdownMenuItem}>Day</ThemedText>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => selectOption('Hourly')}>
-              <ThemedText style={styles.dropdownMenuItem}>Hourly</ThemedText>
-            </TouchableOpacity>
+          <DrinkIntakeHeader />
+
+          <View style={styles.iconRow}>
+            {icons.map((icon, index) => (
+                <TouchableOpacity
+                    key={index}
+                    style={styles.iconContainer}
+                    onPress={() => setSelectedIcon(icon.name)}
+                >
+                  <TabBarIcon
+                      name={icon.name as any}
+                      color={selectedIcon === icon.name ? '#328DD8' : '#000'}
+                      size={24}
+                  />
+                </TouchableOpacity>
+            ))}
           </View>
-        </TouchableOpacity>
-      </Modal>
-    </SafeAreaView>
+
+          <View style={styles.intakeSection}>
+            <ThemedText style={styles.intakeTitle}>Current Intake</ThemedText>
+            <View style={styles.dropdownContainer}>
+              <TouchableOpacity onPress={toggleDropdown} style={styles.dropdown} ref={dropdownRef}>
+                <ThemedText style={styles.dropdownText}>{selectedView}</ThemedText>
+                <TabBarIcon name="chevron-down-outline" size={16} color="#A1CEDC" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <SelectedGraph />
+
+          <View style={styles.detailsButton}>
+            <ThemedText style={styles.detailsButtonText}>Details</ThemedText>
+          </View>
+        </ScrollView>
+
+        <Modal
+            visible={isDropdownOpen}
+            transparent={true}
+            animationType="none"
+            onRequestClose={() => setIsDropdownOpen(false)}
+        >
+          <TouchableOpacity
+              style={styles.modalOverlay}
+              activeOpacity={1}
+              onPress={() => setIsDropdownOpen(false)}
+          >
+            <View style={[styles.dropdownMenu, {
+              position: 'absolute',
+              top: dropdownLayout.y,
+              left: dropdownLayout.x,
+              width: dropdownLayout.width,
+            }]}>
+              <TouchableOpacity onPress={() => selectOption('Day')}>
+                <ThemedText style={styles.dropdownMenuItem}>Day</ThemedText>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => selectOption('Hourly')}>
+                <ThemedText style={styles.dropdownMenuItem}>Hourly</ThemedText>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </Modal>
+      </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: 'white', // or your app's background color
+    backgroundColor: 'white',
   },
   container: {
     flex: 1,
@@ -300,7 +290,7 @@ const styles = StyleSheet.create({
   },
   headerSubtitle: {
     fontSize: 16,
-    color: 'rgba(60, 162, 245, 0.5)', // 50% transparent #3CA2F5
+    color: 'rgba(60, 162, 245, 0.5)',
   },
   headerTitle: {
     fontSize: 24,
@@ -333,17 +323,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: '#328DD8',
-  },
-  daySelector: {
-    fontSize: 16,
-    color: '#328DD8',
-  },
-  chartPlaceholder: {
-    height: 300,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F0F0F0',
-    marginBottom: 20,
   },
   detailsButton: {
     backgroundColor: '#328DD8',
@@ -420,11 +399,6 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: '#328DD8',
     borderRadius: 10,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: 'white',
-    padding: 16,
   },
   row: {
     flexDirection: 'row',
