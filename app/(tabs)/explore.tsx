@@ -2,6 +2,7 @@ import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
+import DrinkIntakeHeader from '@/components/DrinkIntakeHeader';
 
 type ExploreScreenProps = {
     navigation: StackNavigationProp<RootStackParamList, 'ExploreScreen'>;
@@ -10,11 +11,8 @@ type ExploreScreenProps = {
 export default function ExploreScreen({ navigation }: ExploreScreenProps) {
     return (
         <View style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.hydratedText}>Stay hydrated!</Text>
-                <Text style={styles.userName}>Jane Doe</Text>
-                <Ionicons name="notifications-outline" size={24} color="black" style={styles.notificationIcon} />
-            </View>
+            <DrinkIntakeHeader />
+
             <Text style={styles.description}>
                 Welcome to the Drink Intake Project! Keep up the hydration and keep drinking and keep healthy!
             </Text>
@@ -52,25 +50,6 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#f2f8ff',
         padding: 20,
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    hydratedText: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#82b1ff',
-    },
-    userName: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: '#0d47a1',
-    },
-    notificationIcon: {
-        marginLeft: 'auto',
     },
     description: {
         fontSize: 16,
