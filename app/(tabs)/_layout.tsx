@@ -37,6 +37,15 @@ export default function TabLayout() {
         options={{
           title: 'Statistics',
           tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name={focused ? 'stats-chart' : 'stats-chart-outline'} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="waterIntake"
+        options={{
+          title: 'Hydration',
+          tabBarIcon: ({ color, focused }) => (
             <TabBarIcon name={focused ? 'water' : 'water-outline'} color={color} />
           ),
         }}
