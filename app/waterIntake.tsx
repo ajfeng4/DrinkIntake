@@ -3,12 +3,16 @@ import { StyleSheet, View, SafeAreaView, TouchableOpacity, Image, ScrollView, An
 import { ThemedText } from '@/components/ThemedText';
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import DrinkIntakeHeader from '@/components/DrinkIntakeHeader';
+import { Stack, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 const WaterIntakeScreen = () => {
   const insets = useSafeAreaInsets();
   const [hydrationPercentage, setHydrationPercentage] = useState(60);
   const [dropOpacity] = useState(new Animated.Value(0));
   const [dropSize] = useState(new Animated.Value(1));
+  const router = useRouter();
 
   useEffect(() => {
     Animated.parallel([
@@ -42,6 +46,18 @@ const WaterIntakeScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <Stack.Screen 
+        options={{
+          headerShown: true,
+          headerTitle: "",
+          headerBackTitle: " ",
+          headerLeft: () => (
+            <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 10 }}>
+              <Ionicons name="arrow-back" size={24} color="black" />
+            </TouchableOpacity>
+          ),
+        }} 
+      />
       <ScrollView
         style={styles.container}
         contentContainerStyle={{
@@ -50,15 +66,7 @@ const WaterIntakeScreen = () => {
           paddingHorizontal: 20,
         }}
       >
-        <View style={styles.header}>
-          <View>
-            <ThemedText style={styles.headerSubtitle}>Stay hydrated!</ThemedText>
-            <ThemedText style={styles.headerTitle}>Jane Doe</ThemedText>
-          </View>
-          <View style={styles.notificationIcon}>
-            <TabBarIcon name="notifications-outline" color="#333333" />
-          </View>
-        </View>
+        <DrinkIntakeHeader />
 
         <View style={styles.waterDropContainer}>
           <Animated.View style={[
@@ -69,7 +77,7 @@ const WaterIntakeScreen = () => {
             }
           ]}>
             <Image
-              source={require('../../assets/images/water-drop.png')}
+              source={require('../assets/images/water-drop.png')}
               style={styles.waterDrop}
               resizeMode="contain"
             />

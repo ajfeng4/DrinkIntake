@@ -1,9 +1,12 @@
 import React, { useState, useRef } from 'react';
-import { StyleSheet, View, ScrollView, SafeAreaView, TouchableOpacity, Modal, Dimensions, TouchableWithoutFeedback, LayoutRectangle } from 'react-native';
+import { StyleSheet, View, ScrollView, SafeAreaView, TouchableOpacity, Modal, Dimensions, TouchableWithoutFeedback } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LineChart } from 'react-native-chart-kit';
+import DrinkIntakeHeader from '@/components/DrinkIntakeHeader';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../types'; // Adjust the import path as needed
 
 // Updated dummy data for Day and Hourly views
 const dummyData = {
@@ -259,7 +262,11 @@ const LineGraph = ({ selectedView }) => {
   );
 };
 
-const StatisticsScreen = () => {
+type StatisticsScreenProps = {
+  navigation: StackNavigationProp<RootStackParamList, 'statistics'>;
+};
+
+export default function StatisticsScreen({ navigation }: StatisticsScreenProps) {
   const insets = useSafeAreaInsets();
   const [selectedView, setSelectedView] = useState('Day');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -291,7 +298,7 @@ const StatisticsScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView 
+      <ScrollView
         style={styles.container}
         contentContainerStyle={{
           paddingTop: insets.top,
@@ -299,16 +306,8 @@ const StatisticsScreen = () => {
           paddingHorizontal: 20,
         }}
       >
-        <View style={styles.header}>
-          <View>
-            <ThemedText style={styles.headerSubtitle}>Stay hydrated!</ThemedText>
-            <ThemedText style={styles.headerTitle}>Jane Doe</ThemedText>
-          </View>
-          <View style={styles.notificationIcon}>
-            <TabBarIcon name="notifications-outline" color="#333333" />
-          </View>
-        </View>
-        
+        <DrinkIntakeHeader />
+
         <View style={styles.iconRow}>
           {icons.map((icon, index) => (
             <TouchableOpacity
@@ -324,7 +323,7 @@ const StatisticsScreen = () => {
             </TouchableOpacity>
           ))}
         </View>
-        
+
         <View style={styles.intakeSection}>
           <ThemedText style={styles.intakeTitle}>Current Intake</ThemedText>
           <View style={styles.dropdownContainer}>
@@ -334,9 +333,9 @@ const StatisticsScreen = () => {
             </TouchableOpacity>
           </View>
         </View>
-        
+
         <SelectedGraph selectedView={selectedView} />
-        
+
         <View style={styles.detailsButton}>
           <ThemedText style={styles.detailsButtonText}>Details</ThemedText>
         </View>
@@ -348,9 +347,9 @@ const StatisticsScreen = () => {
         animationType="none"
         onRequestClose={() => setIsDropdownOpen(false)}
       >
-        <TouchableOpacity 
-          style={styles.modalOverlay} 
-          activeOpacity={1} 
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
           onPress={() => setIsDropdownOpen(false)}
         >
           <View style={[styles.dropdownMenu, {
@@ -375,7 +374,7 @@ const StatisticsScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: 'white', // or your app's background color
+    backgroundColor: 'white',
   },
   container: {
     flex: 1,
@@ -390,7 +389,7 @@ const styles = StyleSheet.create({
   },
   headerSubtitle: {
     fontSize: 16,
-    color: 'rgba(60, 162, 245, 0.5)', // 50% transparent #3CA2F5
+    color: 'rgba(60, 162, 245, 0.5)',
   },
   headerTitle: {
     fontSize: 24,
@@ -423,17 +422,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: '#328DD8',
-  },
-  daySelector: {
-    fontSize: 16,
-    color: '#328DD8',
-  },
-  chartPlaceholder: {
-    height: 300,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F0F0F0',
-    marginBottom: 20,
   },
   detailsButton: {
     backgroundColor: '#328DD8',
@@ -510,11 +498,6 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: '#328DD8',
     borderRadius: 10,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: 'white',
-    padding: 16,
   },
   row: {
     flexDirection: 'row',
