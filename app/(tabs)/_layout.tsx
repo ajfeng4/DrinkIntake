@@ -16,13 +16,21 @@ export default function TabLayout() {
                     position: 'absolute',
                     backgroundColor: '#2782CC',
                     borderRadius: 15,
-                    height: 60,
+                    height: 80,
+                    paddingTop: 10,
+                    paddingBottom: 10,
                     borderTopWidth: 0,
                     shadowColor: '#000',
                     shadowOffset: { width: 0, height: 5 },
                     shadowOpacity: 0.1,
                     shadowRadius: 10,
                     elevation: 5,
+                },
+                tabBarLabelStyle: {
+                    marginBottom: 5,
+                },
+                tabBarIconStyle: {
+                    marginBottom: 5,
                 },
             }}
         >
