@@ -23,27 +23,27 @@ export default function ExploreScreen({ navigation }: ExploreScreenProps) {
                 </Text>
 
                 <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('ReviewGoals')}>
-                    <Ionicons name="calendar-outline" size={24} color="white" />
+                    <Ionicons name="calendar-outline" size={40} color="#328DD8" />
                     <Text style={styles.buttonText}>Review Goals</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('TrackWaterIntake')}>
-                    <Ionicons name="water-outline" size={24} color="white" />
+                    <Ionicons name="water-outline" size={40} color="#328DD8" />
                     <Text style={styles.buttonText}>Track Your Water Intake</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('WaterIntakeStatistics')}>
-                    <Ionicons name="stats-chart-outline" size={24} color="white" />
+                    <Ionicons name="stats-chart-outline" size={40} color="#328DD8" />
                     <Text style={styles.buttonText}>Water Intake Statistics</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('GoalScoreboard')}>
-                    <Ionicons name="trophy-outline" size={24} color="white" />
+                    <Ionicons name="trophy-outline" size={40} color="#328DD8" />
                     <Text style={styles.buttonText}>Goal Scoreboard</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('SearchPage')}>
-                    <Ionicons name="search-outline" size={24} color="white" />
+                    <Ionicons name="search-outline" size={40} color="#328DD8" />
                     <Text style={styles.buttonText}>Search Page</Text>
                 </TouchableOpacity>
             </View>
@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        backgroundColor: '#f2f8ff',
+        backgroundColor: '#fff',
         padding: 20,
     },
     description: {
@@ -69,14 +69,15 @@ const styles = StyleSheet.create({
     button: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#2196f3',
+        backgroundColor: '#d5e9f9',
         padding: 15,
         borderRadius: 10,
         marginBottom: 20,
         justifyContent: 'center',
+        height: 100,
     },
     buttonText: {
-        color: 'white',
+        color: '#328DD8',
         fontSize: 18,
         fontWeight: 'bold',
         marginLeft: 10,
