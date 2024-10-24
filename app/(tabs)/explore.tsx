@@ -5,6 +5,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DrinkIntakeHeader from '@/components/DrinkIntakeHeader';
+import { useRouter } from 'expo-router';
 
 type ExploreScreenProps = {
     navigation: StackNavigationProp<RootStackParamList, 'ExploreScreen'>;
@@ -12,6 +13,7 @@ type ExploreScreenProps = {
 
 export default function ExploreScreen({ navigation }: ExploreScreenProps) {
     const insets = useSafeAreaInsets();
+    const router = useRouter();
 
     return (
         <SafeAreaView style={[styles.safeArea, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
@@ -27,12 +29,12 @@ export default function ExploreScreen({ navigation }: ExploreScreenProps) {
                     <Text style={styles.buttonText}>Review Goals</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('TrackWaterIntake')}>
+                <TouchableOpacity style={styles.button} onPress={() => router.push('/waterIntake')}>
                     <Ionicons name="water-outline" size={24} color="white" />
                     <Text style={styles.buttonText}>Track Your Water Intake</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('WaterIntakeStatistics')}>
+                <TouchableOpacity style={styles.button} onPress={() => router.push('/(tabs)/statistics')}>
                     <Ionicons name="stats-chart-outline" size={24} color="white" />
                     <Text style={styles.buttonText}>Water Intake Statistics</Text>
                 </TouchableOpacity>

@@ -28,21 +28,19 @@ export default function TabLayout() {
         options={{
           title: 'Statistics',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'water' : 'water-outline'} color={color} />
+            <TabBarIcon name={focused ? 'stats-chart' : 'stats-chart-outline'} color={color} />
           ),
         }}
       />
-        <Tabs.Screen
-            name="index"
-            options={{
-                title: 'History',
-                tabBarIcon: ({ color, focused }) => (
-                    <TabBarIcon name={focused ? 'code-slash' : 'code-slash-outline'} color={color} />
-                ),
-            }}
-        />
-
-
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'History',
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name={focused ? 'code-slash' : 'code-slash-outline'} color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
