@@ -20,7 +20,7 @@ export default function SignIn() {
         if (error) {
             Alert.alert('Signin error', error.message);
         } else if (data?.user) {
-            navigation.navigate('ExploreScreen');
+            navigation.navigate('(tabs)');
         }
     };
 
