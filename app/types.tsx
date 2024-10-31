@@ -7,4 +7,6 @@ export type RootStackParamList = {
     'SearchPage': undefined;
     '(tabs)': undefined;
     '+not-found': undefined;
+    SignUp: undefined;
+    SignIn: undefined;
 };
