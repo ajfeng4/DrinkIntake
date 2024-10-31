@@ -1,21 +1,16 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, Alert, StyleSheet } from 'react-native';
+import { View, TextInput, Button, Alert, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { supabase } from '@/supabaseClient';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
-import { RouteProp } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 
 type SignUpScreenNavigationProp = StackNavigationProp<RootStackParamList, 'SignUp'>;
-type SignUpScreenRouteProp = RouteProp<RootStackParamList, 'SignUp'>;
 
-type SignUpProps = {
-    navigation: SignUpScreenNavigationProp;
-    route: SignUpScreenRouteProp;
-};
-
-export default function SignUp({ navigation }: SignUpProps) {
+export default function SignUp() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const navigation = useNavigation<SignUpScreenNavigationProp>();
 
     const handleSignup = async () => {
         const { data, error } = await supabase.auth.signUp({
@@ -32,11 +27,15 @@ export default function SignUp({ navigation }: SignUpProps) {
 
     return (
         <View style={styles.container}>
+            <Text style={styles.title}>Sign Up</Text>
             <TextInput
                 placeholder="Email"
                 value={email}
                 onChangeText={setEmail}
                 style={styles.input}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
             />
             <TextInput
                 placeholder="Password"
@@ -46,6 +45,12 @@ export default function SignUp({ navigation }: SignUpProps) {
                 style={styles.input}
             />
             <Button title="Sign Up" onPress={handleSignup} />
+            <View style={styles.signinContainer}>
+                <Text style={styles.signinText}>Already have an account?</Text>
+                <TouchableOpacity onPress={() => navigation.navigate('SignIn')}>
+                    <Text style={styles.signinLink}> Sign In</Text>
+                </TouchableOpacity>
+            </View>
         </View>
     );
 }
@@ -57,9 +62,26 @@ const styles = StyleSheet.create({
         padding: 16,
         backgroundColor: 'white',
     },
+    title: {
+        fontSize: 32,
+        marginBottom: 24,
+        textAlign: 'center',
+    },
     input: {
         borderBottomWidth: 1,
         marginBottom: 12,
         padding: 8,
+    },
+    signinContainer: {
+        flexDirection: 'row',
+        marginTop: 16,
+        justifyContent: 'center',
+    },
+    signinText: {
+        fontSize: 16,
+    },
+    signinLink: {
+        fontSize: 16,
+        color: 'blue',
     },
 });
