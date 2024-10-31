@@ -1,19 +1,76 @@
-import React from 'react';
-import { View } from 'react-native';
+import React, { useState } from 'react';
+import { View, Modal, TouchableOpacity, FlatList, Text, StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
-import { StyleSheet } from 'react-native';
+
+type AlertItem = {
+    date: string;
+    time: string;
+    message: string;
+};
+
+const alerts: AlertItem[] = [
+    { date: '9/10/2024', time: '4:11 PM', message: 'Drink 300ml water' },
+    { date: '9/9/2024', time: '4:11 PM', message: 'Drink 300ml water' },
+    { date: '9/8/2024', time: '4:11 PM', message: 'Drink 300ml water' },
+    { date: '9/7/2024', time: '4:11 PM', message: 'Drink 300ml water' },
+    { date: '9/6/2024', time: '4:11 PM', message: 'Drink 300ml water' },
+    { date: '9/5/2024', time: '4:11 PM', message: 'Drink 300ml water' },
+];
 
 const DrinkIntakeHeader = () => {
+    const [modalVisible, setModalVisible] = useState(false);
+
+    const toggleModal = () => {
+        setModalVisible(!modalVisible);
+    };
+
+    const renderAlert = ({ item }: { item: AlertItem }) => (
+        <View style={styles.alertItem}>
+            <TabBarIcon name="water-outline" color="#328DD8" />
+            <View style={styles.alertText}>
+                <Text style={styles.alertDate}>{`${item.date} ${item.time}`}</Text>
+                <Text style={styles.alertMessage}>{item.message}</Text>
+            </View>
+        </View>
+    );
+
     return (
-        <View style={styles.header}>
-            <View>
-                <ThemedText style={styles.headerSubtitle}>Stay hydrated!</ThemedText>
-                <ThemedText style={styles.headerTitle}>Jane Doe</ThemedText>
+        <View>
+            <View style={styles.header}>
+                <View>
+                    <ThemedText style={styles.headerSubtitle}>Stay hydrated!</ThemedText>
+                    <ThemedText style={styles.headerTitle}>Jane Doe</ThemedText>
+                </View>
+                <TouchableOpacity style={styles.notificationIcon} onPress={toggleModal}>
+                    <TabBarIcon name="notifications-outline" color="#333333" />
+                </TouchableOpacity>
             </View>
-            <View style={styles.notificationIcon}>
-                <TabBarIcon name="notifications-outline" color="#333333" />
-            </View>
+
+            {/* Modal for displaying alerts */}
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={toggleModal}
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                        <TouchableOpacity style={styles.closeButton} onPress={toggleModal}>
+                            <TabBarIcon name="close" color="#333333" />
+                        </TouchableOpacity>
+                        <ThemedText style={styles.modalTitle}>Current Alerts</ThemedText>
+                        <FlatList
+                            data={alerts}
+                            renderItem={renderAlert}
+                            keyExtractor={(item, index) => index.toString()}
+                        />
+                        <TouchableOpacity onPress={toggleModal}>
+                            <Text style={styles.moreAlerts}>More Alerts</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };
@@ -38,6 +95,49 @@ const styles = StyleSheet.create({
         backgroundColor: '#F0F0F0',
         borderRadius: 20,
         padding: 10,
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    modalContent: {
+        backgroundColor: '#FFFFFF',
+        width: '80%',
+        padding: 20,
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    closeButton: {
+        alignSelf: 'flex-end',
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 10,
+        color: '#328DD8',
+    },
+    alertItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 10,
+    },
+    alertText: {
+        marginLeft: 10,
+    },
+    alertDate: {
+        fontSize: 16,
+        color: '#328DD8',
+    },
+    alertMessage: {
+        fontSize: 14,
+        color: '#666666',
+    },
+    moreAlerts: {
+        color: '#328DD8',
+        marginTop: 10,
+        textDecorationLine: 'underline',
     },
 });
 
