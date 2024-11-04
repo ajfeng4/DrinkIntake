@@ -61,6 +61,15 @@ export default function TabLayout() {
                     ),
                 }}
             />
+            <Tabs.Screen
+                name="VoiceRecorder"
+                options={{
+                    title: 'Voice Recorder',
+                    tabBarIcon: ({ color, focused }) => (
+                        <TabBarIcon name={focused ? 'mic' : 'mic-outline'} color={color} />
+                    ),
+                }}
+            />
         </Tabs>
     );
 }
