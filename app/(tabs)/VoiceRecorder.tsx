@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, ScrollView, Text, TouchableOpacity, FlatList, View } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, FlatList, View } from 'react-native';
 import { Audio } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -99,18 +99,26 @@ const VoiceRecorder: React.FC = () => {
             : undefined;
     }, [sound]);
 
+    const renderItem = ({ item, index }: { item: { uri: string, id: string }, index: number }) => (
+        <View style={styles.recordingItem}>
+            <Text style={styles.recordingText}>Recording {recordings.length - index}</Text>
+            <TouchableOpacity style={styles.playButton} onPress={() => playSound(item.uri)}>
+                <Ionicons name="play-circle" size={40} color="#328DD8" />
+            </TouchableOpacity>
+        </View>
+    );
+
     return (
         <SafeAreaView style={[styles.safeArea, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-            <ScrollView contentContainerStyle={styles.container}>
-                <Text style={styles.title}>Voice Recorder</Text>
+            <View style={styles.container}>
                 <TouchableOpacity
-                    style={isRecording ? styles.buttonStop : styles.buttonRecord}
+                    style={styles.button}
                     onPress={isRecording ? stopRecording : startRecording}
                 >
                     <Ionicons
                         name={isRecording ? "stop-circle" : "mic-circle"}
-                        size={60}
-                        color="#fff"
+                        size={40}
+                        color="#328DD8"
                     />
                     <Text style={styles.buttonText}>
                         {isRecording ? 'Stop Recording' : 'Start Recording'}
@@ -120,18 +128,11 @@ const VoiceRecorder: React.FC = () => {
                 <FlatList
                     data={recordings}
                     keyExtractor={(item) => item.id}
-                    renderItem={({ item }) => (
-                        <View style={styles.recordingItem}>
-                            <Text style={styles.recordingText}>Recording {recordings.length - recordings.indexOf(item)}</Text>
-                            <TouchableOpacity style={styles.playButton} onPress={() => playSound(item.uri)}>
-                                <Ionicons name="play-circle" size={40} color="#328DD8" />
-                            </TouchableOpacity>
-                        </View>
-                    )}
+                    renderItem={renderItem}
                     ListEmptyComponent={<Text style={styles.noRecordings}>No recordings available.</Text>}
                     style={styles.recordingsList}
                 />
-            </ScrollView>
+            </View>
         </SafeAreaView>
     );
 };
@@ -141,40 +142,30 @@ export default VoiceRecorder;
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: 'white',
     },
     container: {
+        flex: 1,
+        alignItems: 'center',
         padding: 20,
         backgroundColor: '#fff',
+    },
+    button: {
+        flexDirection: 'row',
         alignItems: 'center',
-    },
-    title: {
-        fontSize: 24,
-        color: '#328DD8',
-        fontWeight: 'bold',
-        marginBottom: 30,
-    },
-    buttonRecord: {
-        backgroundColor: '#328DD8',
-        padding: 20,
+        backgroundColor: 'rgba(240, 246, 255, 0.82)',
+        padding: 15,
         borderRadius: 10,
-        alignItems: 'center',
-        marginBottom: 30,
-        width: '80%',
-    },
-    buttonStop: {
-        backgroundColor: '#FF4444',
-        padding: 20,
-        borderRadius: 10,
-        alignItems: 'center',
-        marginBottom: 30,
-        width: '80%',
+        marginBottom: 20,
+        justifyContent: 'center',
+        height: 100,
+        width: '100%',
     },
     buttonText: {
-        color: '#fff',
+        color: '#328DD8',
         fontSize: 18,
-        marginTop: 10,
         fontWeight: 'bold',
+        marginLeft: 10,
     },
     recordingsList: {
         width: '100%',
@@ -202,5 +193,4 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
 });
-
 
