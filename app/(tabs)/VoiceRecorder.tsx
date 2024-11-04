@@ -9,6 +9,8 @@ const VoiceRecorder: React.FC = () => {
     const [sound, setSound] = useState<Audio.Sound | null>(null);
     const [isRecording, setIsRecording] = useState(false);
     const [recordings, setRecordings] = useState<{ uri: string, id: string }[]>([]);
+    const [currentPlayingId, setCurrentPlayingId] = useState<string | null>(null);
+    const [playbackProgress, setPlaybackProgress] = useState<number>(0);
     const insets = useSafeAreaInsets();
 
     useEffect(() => {
@@ -81,11 +83,32 @@ const VoiceRecorder: React.FC = () => {
         }
     };
 
-    const playSound = async (uri: string) => {
+    const playSound = async (uri: string, id: string) => {
         try {
-            const { sound } = await Audio.Sound.createAsync({ uri });
-            setSound(sound);
-            await sound.playAsync();
+            if (sound) {
+                await sound.unloadAsync();
+                setSound(null);
+                setCurrentPlayingId(null);
+                setPlaybackProgress(0);
+            }
+
+            const { sound: newSound } = await Audio.Sound.createAsync(
+                { uri },
+                { shouldPlay: true },
+                (status) => {
+                    if (status.isLoaded) {
+                        if (status.isPlaying && status.durationMillis) {
+                            setPlaybackProgress(status.positionMillis / status.durationMillis);
+                        }
+                        if (status.didJustFinish) {
+                            setCurrentPlayingId(null);
+                            setPlaybackProgress(0);
+                        }
+                    }
+                }
+            );
+            setSound(newSound);
+            setCurrentPlayingId(id);
         } catch (error) {
             console.error('Failed to play sound', error);
         }
@@ -95,6 +118,8 @@ const VoiceRecorder: React.FC = () => {
         return sound
             ? () => {
                 sound.unloadAsync();
+                setCurrentPlayingId(null);
+                setPlaybackProgress(0);
             }
             : undefined;
     }, [sound]);
@@ -102,9 +127,14 @@ const VoiceRecorder: React.FC = () => {
     const renderItem = ({ item, index }: { item: { uri: string, id: string }, index: number }) => (
         <View style={styles.recordingItem}>
             <Text style={styles.recordingText}>Recording {recordings.length - index}</Text>
-            <TouchableOpacity style={styles.playButton} onPress={() => playSound(item.uri)}>
+            <TouchableOpacity style={styles.playButton} onPress={() => playSound(item.uri, item.id)}>
                 <Ionicons name="play-circle" size={40} color="#328DD8" />
             </TouchableOpacity>
+            {currentPlayingId === item.id && (
+                <View style={styles.progressBarContainer}>
+                    <View style={[styles.progressBar, { width: `${playbackProgress * 100}%` }]} />
+                </View>
+            )}
         </View>
     );
 
@@ -171,20 +201,35 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     recordingItem: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'flex-start',
         backgroundColor: 'rgba(240, 246, 255, 0.82)',
         padding: 15,
         borderRadius: 10,
         marginBottom: 15,
+        width: '100%',
     },
     recordingText: {
         fontSize: 16,
         color: '#328DD8',
+        marginBottom: 10,
     },
     playButton: {
         padding: 5,
+        alignSelf: 'flex-end',
+    },
+    progressBarContainer: {
+        height: 10,
+        width: '100%',
+        backgroundColor: '#e0e0e0',
+        borderRadius: 5,
+        marginTop: 10,
+        overflow: 'hidden',
+    },
+    progressBar: {
+        height: '100%',
+        backgroundColor: '#328DD8',
     },
     noRecordings: {
         fontSize: 16,
