@@ -11,6 +11,8 @@ const VoiceRecorder: React.FC = () => {
     const [recordings, setRecordings] = useState<{ uri: string, id: string }[]>([]);
     const [currentPlayingId, setCurrentPlayingId] = useState<string | null>(null);
     const [playbackProgress, setPlaybackProgress] = useState<number>(0);
+    const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
+    const [totalSeconds, setTotalSeconds] = useState<number>(0);
     const insets = useSafeAreaInsets();
 
     useEffect(() => {
@@ -21,6 +23,13 @@ const VoiceRecorder: React.FC = () => {
             }
         })();
     }, []);
+
+    const formatTime = (seconds: number): string => {
+        const hrs = Math.floor(seconds / 3600);
+        const mins = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
 
     const startRecording = async () => {
         try {
@@ -90,6 +99,8 @@ const VoiceRecorder: React.FC = () => {
                 setSound(null);
                 setCurrentPlayingId(null);
                 setPlaybackProgress(0);
+                setElapsedSeconds(0);
+                setTotalSeconds(0);
             }
 
             const { sound: newSound } = await Audio.Sound.createAsync(
@@ -97,12 +108,18 @@ const VoiceRecorder: React.FC = () => {
                 { shouldPlay: true },
                 (status) => {
                     if (status.isLoaded) {
+                        if (status.durationMillis) {
+                            setTotalSeconds(Math.floor(status.durationMillis / 1000));
+                        }
                         if (status.isPlaying && status.durationMillis) {
                             setPlaybackProgress(status.positionMillis / status.durationMillis);
+                            setElapsedSeconds(Math.floor(status.positionMillis / 1000));
                         }
                         if (status.didJustFinish) {
                             setCurrentPlayingId(null);
                             setPlaybackProgress(0);
+                            setElapsedSeconds(0);
+                            setTotalSeconds(0);
                         }
                     }
                 }
@@ -120,6 +137,8 @@ const VoiceRecorder: React.FC = () => {
                 sound.unloadAsync();
                 setCurrentPlayingId(null);
                 setPlaybackProgress(0);
+                setElapsedSeconds(0);
+                setTotalSeconds(0);
             }
             : undefined;
     }, [sound]);
@@ -131,9 +150,12 @@ const VoiceRecorder: React.FC = () => {
                 <Ionicons name="play-circle" size={40} color="#328DD8" />
             </TouchableOpacity>
             {currentPlayingId === item.id && (
-                <View style={styles.progressBarContainer}>
-                    <View style={[styles.progressBar, { width: `${playbackProgress * 100}%` }]} />
-                </View>
+                <>
+                    <View style={styles.progressBarContainer}>
+                        <View style={[styles.progressBar, { width: `${playbackProgress * 100}%` }]} />
+                    </View>
+                    <Text style={styles.timeTracker}>{formatTime(elapsedSeconds)} / {formatTime(totalSeconds)}</Text>
+                </>
             )}
         </View>
     );
@@ -230,6 +252,12 @@ const styles = StyleSheet.create({
     progressBar: {
         height: '100%',
         backgroundColor: '#328DD8',
+    },
+    timeTracker: {
+        marginTop: 5,
+        fontSize: 14,
+        color: '#328DD8',
+        alignSelf: 'flex-end',
     },
     noRecordings: {
         fontSize: 16,
