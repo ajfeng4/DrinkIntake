@@ -1,8 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, FlatList, View } from 'react-native';
 import { Audio } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { supabase } from '@/supabaseClient';
+import * as FileSystem from 'expo-file-system';
+
+const uriToBlob = async (uri: string): Promise<Blob> => {
+    try {
+        const response = await fetch(uri);
+        if (!response.ok) {
+            throw new Error('Failed to fetch blob from URI');
+        }
+        const blob = await response.blob();
+        console.log('Blob created successfully:', blob);
+        return blob;
+    } catch (error) {
+        console.error('Error converting URI to blob:', error);
+        throw error;
+    }
+};
 
 const VoiceRecorder: React.FC = () => {
     const [recording, setRecording] = useState<Audio.Recording | null>(null);
@@ -14,6 +31,39 @@ const VoiceRecorder: React.FC = () => {
     const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
     const [totalSeconds, setTotalSeconds] = useState<number>(0);
     const insets = useSafeAreaInsets();
+    const [user, setUser] = useState<any>(null);
+
+    const stopRecordingInProgress = useRef(false);
+
+    useEffect(() => {
+        const initializeUser = async () => {
+            const { data: { session }, error } = await supabase.auth.getSession();
+            if (error) {
+                console.error('Error fetching session:', error);
+            } else {
+                setUser(session?.user ?? null);
+                console.log('Authenticated User:', session?.user);
+            }
+        };
+
+        initializeUser();
+
+        const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user ?? null);
+            console.log('Auth State Changed - User:', session?.user);
+        });
+
+        return () => {
+            authListener.subscription.unsubscribe();
+        };
+    }, []);
+
+    useEffect(() => {
+        if (user) {
+            console.log('Fetching recordings for user ID:', user.id);
+            fetchRecordings();
+        }
+    }, [user]);
 
     useEffect(() => {
         (async () => {
@@ -21,8 +71,29 @@ const VoiceRecorder: React.FC = () => {
             if (status !== 'granted') {
                 alert('Permission to access microphone is required!');
             }
+            console.log('Microphone permission status:', status);
         })();
     }, []);
+
+    const fetchRecordings = async () => {
+        const { data, error } = await supabase
+            .from('recordings')
+            .select('id, file_url')
+            .eq('user_id', user?.id)
+            .order('created_at', { ascending: false });
+        if (error) {
+            console.error('Error fetching recordings:', error);
+            return;
+        }
+        if (data) {
+            const recordingsData = data.map((recording: any) => ({
+                uri: supabase.storage.from('recordings').getPublicUrl(recording.file_url).data.publicUrl,
+                id: recording.id,
+            }));
+            setRecordings(recordingsData);
+            console.log('Fetched Recordings:', recordingsData);
+        }
+    };
 
     const formatTime = (seconds: number): string => {
         const hrs = Math.floor(seconds / 3600);
@@ -38,7 +109,7 @@ const VoiceRecorder: React.FC = () => {
                 alert('Permission to access microphone is required!');
                 return;
             }
-
+            console.log('Starting recording...');
             await Audio.setAudioModeAsync({
                 allowsRecordingIOS: true,
                 playsInSilentModeIOS: true,
@@ -72,23 +143,58 @@ const VoiceRecorder: React.FC = () => {
             await newRecording.startAsync();
             setRecording(newRecording);
             setIsRecording(true);
+            console.log('Recording started');
         } catch (err) {
             console.error('Failed to start recording', err);
         }
     };
 
     const stopRecording = async () => {
+        if (!recording || !isRecording || stopRecordingInProgress.current) {
+            console.warn('No active recording to stop or already stopping.');
+            return;
+        }
+
+        stopRecordingInProgress.current = true;
+
         try {
-            if (!recording) return;
             await recording.stopAndUnloadAsync();
             const uri = recording.getURI();
-            if (uri) {
-                setRecordings(prev => [...prev, { uri, id: Date.now().toString() }]);
+            console.log('Recording stopped. URI:', uri);
+            if (uri && user) {
+                const fileName = `${user.id}/${Date.now()}.m4a`;
+                console.log('File name:', fileName);
+                const fileInfo = await FileSystem.getInfoAsync(uri);
+                const blob = await uriToBlob(uri);
+                console.log('Blob size:', blob.size);
+                console.log('Uploading file:', fileName);
+                const { error: uploadError } = await supabase.storage.from('recordings').upload(fileName, blob, {
+                    cacheControl: '3600',
+                    upsert: false,
+                });
+                if (uploadError) {
+                    console.error('Error uploading file:', uploadError);
+                    return;
+                }
+                console.log('File uploaded successfully');
+                console.log('Inserting recording into database for user ID:', user.id);
+                const { data, error: insertError } = await supabase.from('recordings').insert([
+                    { user_id: user.id, file_url: fileName },
+                ]);
+                if (insertError) {
+                    console.error('Error inserting recording:', insertError);
+                    return;
+                }
+                console.log('Recording inserted successfully:', data);
+                fetchRecordings();
             }
-            setRecording(null);
-            setIsRecording(false);
         } catch (error) {
             console.error('Failed to stop recording', error);
+        } finally {
+            setRecording(null);
+            setIsRecording(false);
+            stopRecordingInProgress.current = false;
+            console.log('Recording state reset');
         }
     };
 
@@ -101,6 +207,7 @@ const VoiceRecorder: React.FC = () => {
                 setPlaybackProgress(0);
                 setElapsedSeconds(0);
                 setTotalSeconds(0);
+                console.log('Unloaded previous sound');
             }
 
             const { sound: newSound } = await Audio.Sound.createAsync(
@@ -120,12 +227,14 @@ const VoiceRecorder: React.FC = () => {
                             setPlaybackProgress(0);
                             setElapsedSeconds(0);
                             setTotalSeconds(0);
+                            console.log('Playback finished');
                         }
                     }
                 }
             );
             setSound(newSound);
             setCurrentPlayingId(id);
+            console.log('Playing sound:', uri);
         } catch (error) {
             console.error('Failed to play sound', error);
         }
@@ -139,6 +248,7 @@ const VoiceRecorder: React.FC = () => {
                 setPlaybackProgress(0);
                 setElapsedSeconds(0);
                 setTotalSeconds(0);
+                console.log('Sound unloaded');
             }
             : undefined;
     }, [sound]);
@@ -166,6 +276,7 @@ const VoiceRecorder: React.FC = () => {
                 <TouchableOpacity
                     style={styles.button}
                     onPress={isRecording ? stopRecording : startRecording}
+                    disabled={stopRecordingInProgress.current}
                 >
                     <Ionicons
                         name={isRecording ? "stop-circle" : "mic-circle"}
@@ -266,4 +377,3 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
 });
-
