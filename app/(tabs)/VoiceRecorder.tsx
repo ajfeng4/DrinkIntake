@@ -6,19 +6,19 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '@/supabaseClient';
 import * as FileSystem from 'expo-file-system';
 
-const uriToBlob = (uri: string): Promise<Blob> => {
-    return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.onload = () => {
-            resolve(xhr.response);
-        };
-        xhr.onerror = () => {
-            reject(new Error('Failed to convert URI to blob'));
-        };
-        xhr.responseType = 'blob';
-        xhr.open('GET', uri, true);
-        xhr.send(null);
-    });
+const uriToBlob = async (uri: string): Promise<Blob> => {
+    try {
+        const response = await fetch(uri);
+        if (!response.ok) {
+            throw new Error('Failed to fetch blob from URI');
+        }
+        const blob = await response.blob();
+        console.log('Blob created successfully:', blob);
+        return blob;
+    } catch (error) {
+        console.error('Error converting URI to blob:', error);
+        throw error;
+    }
 };
 
 const VoiceRecorder: React.FC = () => {
@@ -166,6 +166,7 @@ const VoiceRecorder: React.FC = () => {
                 console.log('File name:', fileName);
                 const fileInfo = await FileSystem.getInfoAsync(uri);
                 const blob = await uriToBlob(uri);
+                console.log('Blob size:', blob.size);
                 console.log('Uploading file:', fileName);
                 const { error: uploadError } = await supabase.storage.from('recordings').upload(fileName, blob, {
                     cacheControl: '3600',
