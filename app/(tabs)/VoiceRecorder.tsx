@@ -6,6 +6,21 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '@/supabaseClient';
 import * as FileSystem from 'expo-file-system';
 
+const uriToBlob = (uri: string): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.onload = () => {
+            resolve(xhr.response);
+        };
+        xhr.onerror = () => {
+            reject(new Error('Failed to convert URI to blob'));
+        };
+        xhr.responseType = 'blob';
+        xhr.open('GET', uri, true);
+        xhr.send(null);
+    });
+};
+
 const VoiceRecorder: React.FC = () => {
     const [recording, setRecording] = useState<Audio.Recording | null>(null);
     const [sound, setSound] = useState<Audio.Sound | null>(null);
@@ -150,13 +165,7 @@ const VoiceRecorder: React.FC = () => {
                 const fileName = `${user.id}/${Date.now()}.m4a`;
                 console.log('File name:', fileName);
                 const fileInfo = await FileSystem.getInfoAsync(uri);
-                const file = {
-                    uri: uri,
-                    name: fileName,
-                    type: 'audio/m4a',
-                };
-                const response = await fetch(uri);
-                const blob = await response.blob();
+                const blob = await uriToBlob(uri);
                 console.log('Uploading file:', fileName);
                 const { error: uploadError } = await supabase.storage.from('recordings').upload(fileName, blob, {
                     cacheControl: '3600',
@@ -266,7 +275,7 @@ const VoiceRecorder: React.FC = () => {
                 <TouchableOpacity
                     style={styles.button}
                     onPress={isRecording ? stopRecording : startRecording}
-                    disabled={stopRecordingInProgress.current} // Disable button during stop operation
+                    disabled={stopRecordingInProgress.current}
                 >
                     <Ionicons
                         name={isRecording ? "stop-circle" : "mic-circle"}
