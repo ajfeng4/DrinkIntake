@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, FlatList, View } from 'react-native';
 import { Audio } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,6 +17,8 @@ const VoiceRecorder: React.FC = () => {
     const [totalSeconds, setTotalSeconds] = useState<number>(0);
     const insets = useSafeAreaInsets();
     const [user, setUser] = useState<any>(null);
+
+    const stopRecordingInProgress = useRef(false);
 
     useEffect(() => {
         const initializeUser = async () => {
@@ -133,8 +135,14 @@ const VoiceRecorder: React.FC = () => {
     };
 
     const stopRecording = async () => {
+        if (!recording || !isRecording || stopRecordingInProgress.current) {
+            console.warn('No active recording to stop or already stopping.');
+            return;
+        }
+
+        stopRecordingInProgress.current = true;
+
         try {
-            if (!recording) return;
             await recording.stopAndUnloadAsync();
             const uri = recording.getURI();
             console.log('Recording stopped. URI:', uri);
@@ -159,7 +167,6 @@ const VoiceRecorder: React.FC = () => {
                     return;
                 }
                 console.log('File uploaded successfully');
-
                 console.log('Inserting recording into database for user ID:', user.id);
                 const { data, error: insertError } = await supabase.from('recordings').insert([
                     { user_id: user.id, file_url: fileName },
@@ -171,11 +178,13 @@ const VoiceRecorder: React.FC = () => {
                 console.log('Recording inserted successfully:', data);
                 fetchRecordings();
             }
-            setRecording(null);
-            setIsRecording(false);
-            console.log('Recording state reset');
         } catch (error) {
             console.error('Failed to stop recording', error);
+        } finally {
+            setRecording(null);
+            setIsRecording(false);
+            stopRecordingInProgress.current = false;
+            console.log('Recording state reset');
         }
     };
 
@@ -257,6 +266,7 @@ const VoiceRecorder: React.FC = () => {
                 <TouchableOpacity
                     style={styles.button}
                     onPress={isRecording ? stopRecording : startRecording}
+                    disabled={stopRecordingInProgress.current} // Disable button during stop operation
                 >
                     <Ionicons
                         name={isRecording ? "stop-circle" : "mic-circle"}
@@ -357,5 +367,3 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
 });
-
-
