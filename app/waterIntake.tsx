@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DrinkIntakeHeader from '@/components/DrinkIntakeHeader';
 import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import CircularProgress from 'react-native-circular-progress-indicator';
 
 const WaterIntakeScreen = () => {
   const insets = useSafeAreaInsets();
@@ -13,6 +14,10 @@ const WaterIntakeScreen = () => {
   const [dropOpacity] = useState(new Animated.Value(0));
   const [dropSize] = useState(new Animated.Value(1));
   const router = useRouter();
+
+  // Daily goal in ml
+  const dailyGoal = 2000;
+  const currentIntake = 1200; // This should come from your data source
 
   useEffect(() => {
     Animated.parallel([
@@ -45,7 +50,7 @@ const WaterIntakeScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <>
       <Stack.Screen 
         options={{
           headerShown: true,
@@ -66,7 +71,36 @@ const WaterIntakeScreen = () => {
           paddingHorizontal: 20,
         }}
       >
-        <DrinkIntakeHeader />
+        <View style={styles.progressSection}>
+          <CircularProgress
+            value={currentIntake}
+            radius={80}
+            duration={2000}
+            progressValueColor={'#328DD8'}
+            maxValue={dailyGoal}
+            title={'ml'}
+            titleColor={'#328DD8'}
+            titleStyle={{ fontWeight: 'bold' }}
+            activeStrokeColor={'#328DD8'}
+            inActiveStrokeColor={'#EFF0F6'}
+            inActiveStrokeOpacity={0.5}
+            inActiveStrokeWidth={6}
+            activeStrokeWidth={12}
+            subtitle={'Daily Goal'}
+            subtitleStyle={{ color: '#6C757D' }}
+          />
+          <View style={styles.goalInfoContainer}>
+            <View style={styles.goalInfo}>
+              <ThemedText style={styles.goalLabel}>Current</ThemedText>
+              <ThemedText style={styles.goalValue}>{currentIntake}ml</ThemedText>
+            </View>
+            <View style={styles.goalDivider} />
+            <View style={styles.goalInfo}>
+              <ThemedText style={styles.goalLabel}>Target</ThemedText>
+              <ThemedText style={styles.goalValue}>{dailyGoal}ml</ThemedText>
+            </View>
+          </View>
+        </View>
 
         <View style={styles.waterDropContainer}>
           <Animated.View style={[
@@ -119,7 +153,7 @@ const WaterIntakeScreen = () => {
           <ThemedText style={styles.reviewGoalsText}>Review Goals</ThemedText>
         </TouchableOpacity>
       </ScrollView>
-    </SafeAreaView>
+    </>
   );
 };
 
@@ -252,6 +286,41 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  progressSection: {
+    alignItems: 'center',
+    marginVertical: 20,
+    paddingHorizontal: 20,
+  },
+  goalInfoContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    padding: 15,
+    width: '100%',
+  },
+  goalInfo: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  goalDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: '#DEE2E6',
+    marginHorizontal: 15,
+  },
+  goalLabel: {
+    fontSize: 14,
+    color: '#6C757D',
+    marginBottom: 4,
+  },
+  goalValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#328DD8',
   },
 });
 

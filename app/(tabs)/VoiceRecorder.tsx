@@ -5,21 +5,19 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '@/supabaseClient';
 import * as FileSystem from 'expo-file-system';
+import { Buffer } from 'buffer';
 
 const uriToBlob = async (uri: string): Promise<Blob> => {
     try {
         const response = await fetch(uri);
-        if (!response.ok) {
-            throw new Error('Failed to fetch blob from URI');
-        }
         const blob = await response.blob();
-        console.log('Blob created successfully:', blob);
         return blob;
     } catch (error) {
         console.error('Error converting URI to blob:', error);
         throw error;
     }
 };
+
 
 const VoiceRecorder: React.FC = () => {
     const [recording, setRecording] = useState<Audio.Recording | null>(null);
@@ -161,30 +159,42 @@ const VoiceRecorder: React.FC = () => {
             await recording.stopAndUnloadAsync();
             const uri = recording.getURI();
             console.log('Recording stopped. URI:', uri);
+            
             if (uri && user) {
                 const fileName = `${user.id}/${Date.now()}.m4a`;
                 console.log('File name:', fileName);
-                const fileInfo = await FileSystem.getInfoAsync(uri);
-                const blob = await uriToBlob(uri);
-                console.log('Blob size:', blob.size);
-                console.log('Uploading file:', fileName);
-                const { error: uploadError } = await supabase.storage.from('recordings').upload(fileName, blob, {
-                    cacheControl: '3600',
-                    upsert: false,
-                });
+
+                // Read the file content
+                const fileContent = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' });
+                
+                // Convert to ArrayBuffer
+                const buffer = Buffer.from(fileContent, 'base64');
+                
+                // Upload using the raw buffer
+                const { error: uploadError } = await supabase.storage
+                    .from('recordings')
+                    .upload(fileName, buffer.buffer, {
+                        contentType: 'audio/x-m4a',
+                        upsert: false,
+                    });
+
                 if (uploadError) {
                     console.error('Error uploading file:', uploadError);
                     return;
                 }
+
                 console.log('File uploaded successfully');
                 console.log('Inserting recording into database for user ID:', user.id);
-                const { data, error: insertError } = await supabase.from('recordings').insert([
-                    { user_id: user.id, file_url: fileName },
-                ]);
+                
+                const { data, error: insertError } = await supabase
+                    .from('recordings')
+                    .insert([{ user_id: user.id, file_url: fileName }]);
+
                 if (insertError) {
                     console.error('Error inserting recording:', insertError);
                     return;
                 }
+                
                 console.log('Recording inserted successfully:', data);
                 fetchRecordings();
             }
