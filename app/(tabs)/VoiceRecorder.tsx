@@ -148,36 +148,26 @@ const VoiceRecorder: React.FC = () => {
 
                 // Load model files
                 const modelJSON = require('../../assets/tfjs_model/model.json');
-                console.log('Model JSON loaded');
                 
-                const weightAssets = [
-                    Asset.fromModule(require('../../assets/tfjs_model/group1-shard1of4.bin')),
-                    Asset.fromModule(require('../../assets/tfjs_model/group1-shard2of4.bin')),
-                    Asset.fromModule(require('../../assets/tfjs_model/group1-shard3of4.bin')),
-                    Asset.fromModule(require('../../assets/tfjs_model/group1-shard4of4.bin'))
-                ];
-                console.log('Model weights loaded');
-                
-                await Promise.all(weightAssets.map(asset => asset.downloadAsync()));
-            
-                const weightPaths = weightAssets.map(asset => asset.localUri);
+                // Use require.resolveAssetSource to get the correct path
+                const weightFiles = [
+                    require('../../assets/tfjs_model/group1-shard1of4.bin'),
+                    require('../../assets/tfjs_model/group1-shard2of4.bin'),
+                    require('../../assets/tfjs_model/group1-shard3of4.bin'),
+                    require('../../assets/tfjs_model/group1-shard4of4.bin')
+                ].map(require.resolveAssetSource);
 
-                // Load the model
+                // Load the model using paths
                 const loadedModel = await tf.loadLayersModel(
-                    bundleResourceIO(modelJSON, weightPaths)
+                    bundleResourceIO(modelJSON, weightFiles)
                 );
                 
-                console.log('Model architecture:');
+                console.log('Model loaded successfully');
                 loadedModel.summary();
-
                 setModel(loadedModel);
-                console.log('Model loaded successfully and set in state');
+
             } catch (error) {
                 console.error('Error loading model:', error);
-                if (error instanceof Error) {
-                    console.error('Error message:', error.message);
-                    console.error('Error stack:', error.stack);
-                }
             }
         };
 
