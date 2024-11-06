@@ -6,18 +6,83 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '@/supabaseClient';
 import * as FileSystem from 'expo-file-system';
 import { Buffer } from 'buffer';
+import * as tf from '@tensorflow/tfjs';
+import '@tensorflow/tfjs-react-native';
+import { bundleResourceIO } from '@tensorflow/tfjs-react-native';
+import { Asset } from 'expo-asset';
 
-const uriToBlob = async (uri: string): Promise<Blob> => {
+interface SpectrogramData {
+    data: number[][];
+    sampleRate: number;
+}
+
+const extractSpectrogram = async (audioBuffer: ArrayBuffer): Promise<tf.Tensor> => {
     try {
-        const response = await fetch(uri);
-        const blob = await response.blob();
-        return blob;
+        return tf.tidy(() => {
+            // Convert ArrayBuffer to tensor
+            const tensor = tf.tensor(new Float32Array(audioBuffer));
+            console.log('Input audio tensor shape:', tensor.shape);
+            
+            // Create spectrogram using TFJS operations
+            const stft = tf.signal.stft(tensor, 256, 128);
+            const spectrogram = tf.abs(stft);
+            console.log('Raw spectrogram shape:', spectrogram.shape);
+            
+            // Normalize and reshape
+            const maxVal = spectrogram.max();
+            const normalizedSpectrogram = spectrogram.div(maxVal)
+                .resizeBilinear([128, 63])  // Resize to expected dimensions
+                .expandDims(-1)  // Add channel dimension
+                .expandDims(0);  // Add batch dimension
+            
+            console.log('Final spectrogram shape:', normalizedSpectrogram.shape);
+            
+            return normalizedSpectrogram;
+        });
     } catch (error) {
-        console.error('Error converting URI to blob:', error);
+        console.error('Error in extractSpectrogram:', error);
         throw error;
     }
 };
 
+const predictAudioClass = async (
+    uri: string,
+    model: tf.LayersModel
+): Promise<{ result: string; prediction: number }> => {
+    try {
+        console.log('Starting prediction for URI:', uri);
+        console.log('Model available:', !!model);
+
+        // Read the audio file
+        console.log('Fetching audio file...');
+        const response = await fetch(uri);
+        const audioBuffer = await response.arrayBuffer();
+        console.log('Audio buffer size:', audioBuffer.byteLength);
+
+        // Extract and preprocess the spectrogram
+        console.log('Extracting spectrogram...');
+        const spectrogram = await extractSpectrogram(audioBuffer);
+        console.log('Spectrogram shape:', spectrogram.shape);
+
+        // Make prediction
+        console.log('Making prediction...');
+        const prediction = await model.predict(spectrogram) as tf.Tensor;
+        const predictionValue = (await prediction.data())[0];
+        console.log('Raw prediction value:', predictionValue);
+
+        // Cleanup tensors
+        spectrogram.dispose();
+        prediction.dispose();
+
+        // Return result
+        const result = predictionValue < 0.5 ? "Swallowing" : "NotSwallowing";
+        console.log('Final classification:', result);
+        return { result, prediction: predictionValue };
+    } catch (error) {
+        console.error('Error in predictAudioClass:', error);
+        throw error;
+    }
+};
 
 const VoiceRecorder: React.FC = () => {
     const [recording, setRecording] = useState<Audio.Recording | null>(null);
@@ -30,6 +95,7 @@ const VoiceRecorder: React.FC = () => {
     const [totalSeconds, setTotalSeconds] = useState<number>(0);
     const insets = useSafeAreaInsets();
     const [user, setUser] = useState<any>(null);
+    const [model, setModel] = useState<tf.LayersModel | null>(null);
 
     const stopRecordingInProgress = useRef(false);
 
@@ -71,6 +137,51 @@ const VoiceRecorder: React.FC = () => {
             }
             console.log('Microphone permission status:', status);
         })();
+    }, []);
+
+    useEffect(() => {
+        const loadModel = async () => {
+            try {
+                console.log('Starting model loading...');
+                await tf.ready();
+                console.log('TF Ready');
+
+                // Load model files
+                const modelJSON = require('../../assets/tfjs_model/model.json');
+                console.log('Model JSON loaded');
+                
+                const weightAssets = [
+                    Asset.fromModule(require('../../assets/tfjs_model/group1-shard1of4.bin')),
+                    Asset.fromModule(require('../../assets/tfjs_model/group1-shard2of4.bin')),
+                    Asset.fromModule(require('../../assets/tfjs_model/group1-shard3of4.bin')),
+                    Asset.fromModule(require('../../assets/tfjs_model/group1-shard4of4.bin'))
+                ];
+                console.log('Model weights loaded');
+                
+                await Promise.all(weightAssets.map(asset => asset.downloadAsync()));
+            
+                const weightPaths = weightAssets.map(asset => asset.localUri);
+
+                // Load the model
+                const loadedModel = await tf.loadLayersModel(
+                    bundleResourceIO(modelJSON, weightPaths)
+                );
+                
+                console.log('Model architecture:');
+                loadedModel.summary();
+
+                setModel(loadedModel);
+                console.log('Model loaded successfully and set in state');
+            } catch (error) {
+                console.error('Error loading model:', error);
+                if (error instanceof Error) {
+                    console.error('Error message:', error.message);
+                    console.error('Error stack:', error.stack);
+                }
+            }
+        };
+
+        loadModel();
     }, []);
 
     const fetchRecordings = async () => {
@@ -156,10 +267,25 @@ const VoiceRecorder: React.FC = () => {
         stopRecordingInProgress.current = true;
 
         try {
+            console.log('Stopping recording...');
             await recording.stopAndUnloadAsync();
             const uri = recording.getURI();
             console.log('Recording stopped. URI:', uri);
-            
+
+            if (!model) {
+                console.error('Model not loaded yet!');
+                return;
+            }
+
+            if (!uri) {
+                console.error('No URI available from recording!');
+                return;
+            }
+
+            console.log('Starting classification...');
+            const { result, prediction } = await predictAudioClass(uri, model);
+            console.log('Classification complete:', result, 'Prediction value:', prediction);
+
             if (uri && user) {
                 const fileName = `${user.id}/${Date.now()}.m4a`;
                 console.log('File name:', fileName);
@@ -387,3 +513,4 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
 });
+
