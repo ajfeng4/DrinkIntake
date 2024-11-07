@@ -1,9 +1,34 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { supabase } from '@/supabaseClient';
 
 export default function FirstAndLastName({ navigation }: any) {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
+
+    const handleContinue = async () => {
+        const { data, error: userError } = await supabase.auth.getUser();
+        if (userError || !data.user) {
+            console.error('Error fetching user:', userError?.message || 'No user found');
+            Alert.alert('Error', 'Unable to fetch user information.');
+            return;
+        }
+
+        const userId = data.user.id;
+
+        const { error } = await supabase.from('profiles').upsert({
+            id: userId,
+            first_name: firstName,
+            last_name: lastName,
+        });
+
+        if (error) {
+            console.error('Error saving user data:', error.message);
+            Alert.alert('Error', 'Failed to save your information.');
+        } else {
+            navigation.navigate('Attributes');
+        }
+    };
 
     return (
         <View style={styles.container}>
@@ -31,10 +56,7 @@ export default function FirstAndLastName({ navigation }: any) {
                     style={styles.input}
                 />
             </View>
-            <TouchableOpacity
-                style={styles.button}
-                onPress={() => navigation.navigate('Attributes')}
-            >
+            <TouchableOpacity style={styles.button} onPress={handleContinue}>
                 <Text style={styles.buttonText}>Continue</Text>
             </TouchableOpacity>
         </View>

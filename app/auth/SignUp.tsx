@@ -22,7 +22,7 @@ export default function SignUp() {
             Alert.alert('Signup error', error.message);
         } else if (data?.user) {
             Alert.alert('Signup successful!', 'Please check your email for verification.');
-            navigation.navigate('(tabs)');
+            navigation.navigate('FirstAndLastName');
         }
     };
 
@@ -184,3 +184,4 @@ const styles = StyleSheet.create({
         textAlign: 'left',
     },
 });
+

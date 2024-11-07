@@ -10,4 +10,7 @@ export type RootStackParamList = {
     SignUp: undefined;
     SignIn: undefined;
     'VoiceRecorder': undefined;
+    'FirstAndLastName': undefined;
+    'Attributes': undefined;
+    'TermsOfService': undefined;
 };
