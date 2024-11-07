@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { supabase } from '@/supabaseClient';
 
 export default function Attributes({ navigation }: any) {
     const [selectedAttributes, setSelectedAttributes] = useState<{
@@ -19,6 +20,29 @@ export default function Attributes({ navigation }: any) {
             ...prev,
             [category]: prev[category] === attribute ? '' : attribute,
         }));
+    };
+
+    const handleContinue = async () => {
+        const { data, error: userError } = await supabase.auth.getUser();
+        if (userError || !data.user) {
+            console.error('Error fetching user:', userError?.message || 'No user found');
+            Alert.alert('Error', 'Unable to fetch user information.');
+            return;
+        }
+
+        const userId = data.user.id;
+
+        const { error } = await supabase.from('profiles').upsert({
+            id: userId,
+            ...selectedAttributes,
+        });
+
+        if (error) {
+            console.error('Error saving attributes:', error.message);
+            Alert.alert('Error', 'Failed to save your attributes.');
+        } else {
+            navigation.navigate('TermsOfService');
+        }
     };
 
     return (
@@ -130,10 +154,7 @@ export default function Attributes({ navigation }: any) {
                 </View>
             </View>
 
-            <TouchableOpacity
-                style={styles.button}
-                onPress={() => navigation.navigate('TermsOfService')}
-            >
+            <TouchableOpacity style={styles.button} onPress={handleContinue}>
                 <Text style={styles.buttonText}>Continue</Text>
             </TouchableOpacity>
         </View>
@@ -211,4 +232,3 @@ const styles = StyleSheet.create({
         fontSize: 14,
     },
 });
-
