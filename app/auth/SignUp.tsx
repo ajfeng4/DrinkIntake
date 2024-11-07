@@ -22,7 +22,7 @@ export default function SignUp() {
             Alert.alert('Signup error', error.message);
         } else if (data?.user) {
             Alert.alert('Signup successful!', 'Please check your email for verification.');
-            navigation.navigate('FirstAndLastName');
+            navigation.navigate('(tabs)', { screen: 'FirstAndLastName' });
         }
     };
 
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 30,
-        fontWeight: 'regular',
+        fontWeight: 'normal',
         textAlign: 'center',
         color: '#328DD8',
         marginBottom: 10,
@@ -154,13 +154,13 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         marginVertical: 10,
         borderWidth: 0.5,
-        borderColor: "#9D9D9D",
+        borderColor: '#9D9D9D',
         width: 330,
     },
     socialButtonText: {
         color: '#000',
         fontSize: 18,
-        fontWeight: 'regular',
+        fontWeight: 'normal',
     },
     button: {
         backgroundColor: '#fff',
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
         borderWidth: 0.5,
         borderColor: '#9D9D9D',
         width: 200,
-        alignSelf: "center"
+        alignSelf: 'center',
     },
     buttonText: {
         color: '#328DD8',
