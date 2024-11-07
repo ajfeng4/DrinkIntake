@@ -27,10 +27,23 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "assets": [
+      "assets/tfjs_model/model.json",
+      "assets/tfjs_model/group1-shard1of4.bin",
+      "assets/tfjs_model/group1-shard2of4.bin",
+      "assets/tfjs_model/group1-shard3of4.bin",
+      "assets/tfjs_model/group1-shard4of4.bin"
+    ]
   }
 }
