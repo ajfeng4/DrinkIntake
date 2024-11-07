@@ -506,7 +506,7 @@ const VoiceRecorder: React.FC = () => {
                 
                 const { data, error: insertError } = await supabase
                     .from('recordings')
-                    .insert([{ user_id: user.id, file_url: fileName }]);
+                    .insert([{ user_id: user.id, file_url: fileName, prediction_class: result}]);
     
                 if (insertError) {
                     console.error('Error inserting recording:', insertError);
