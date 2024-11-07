@@ -10,14 +10,22 @@ export default function FirstAndLastName({ navigation }: any) {
             <Text style={styles.title}>Let us get to know you!</Text>
             <Text style={styles.subtitle}>Please enter your information, so we can build you a plan!</Text>
             <View style={styles.inputContainer}>
+                <View style={styles.labelContainer}>
+                    <Text style={styles.label}>First Name</Text>
+                    <View style={styles.labelUnderline} />
+                </View>
                 <TextInput
-                    placeholder="First Name"
+                    placeholder=""
                     value={firstName}
                     onChangeText={setFirstName}
                     style={styles.input}
                 />
+                <View style={styles.labelContainer}>
+                    <Text style={styles.label}>Last Name</Text>
+                    <View style={styles.labelUnderline} />
+                </View>
                 <TextInput
-                    placeholder="Last Name"
+                    placeholder=""
                     value={lastName}
                     onChangeText={setLastName}
                     style={styles.input}
@@ -47,20 +55,35 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     subtitle: {
-        fontSize: 16,
-        color: '#6c6c6c',
+        fontSize: 12,
+        color: '#328DD8',
         textAlign: 'center',
         marginBottom: 30,
     },
     inputContainer: {
         marginBottom: 30,
     },
+    labelContainer: {
+        marginBottom: 5,
+    },
+    label: {
+        fontSize: 12,
+        color: '#9D9D9D',
+        marginBottom: 5,
+    },
+    labelUnderline: {
+        width: 80,
+        height: 1,
+        backgroundColor: '#9D9D9D',
+        marginBottom: 10,
+    },
     input: {
-        fontSize: 16,
+        fontSize: 12,
+        height: 40,
         borderBottomWidth: 1,
-        borderBottomColor: '#6c6c6c',
+        borderBottomColor: '#9D9D9D',
         marginBottom: 20,
-        paddingVertical: 5,
+        paddingHorizontal: 10,
     },
     button: {
         backgroundColor: '#328DD8',

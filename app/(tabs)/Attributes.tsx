@@ -154,8 +154,8 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     subtitle: {
-        fontSize: 16,
-        color: '#6c6c6c',
+        fontSize: 12,
+        color: '#328DD8',
         textAlign: 'center',
         marginBottom: 20,
     },
