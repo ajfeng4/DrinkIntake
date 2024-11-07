@@ -72,6 +72,33 @@ export default function TabLayout() {
                     tabBarButton: () => null,
                 }}
             />
+            <Tabs.Screen
+                name="FirstAndLastName"
+                options={{
+                    title: 'Name',
+                    tabBarIcon: ({ color, focused }) => (
+                        <TabBarIcon name={focused ? 'person' : 'person-outline'} color={color} />
+                    ),
+                }}
+            />
+            <Tabs.Screen
+                name="Attributes"
+                options={{
+                    title: 'Attributes',
+                    tabBarIcon: ({ color, focused }) => (
+                        <TabBarIcon name={focused ? 'list' : 'list-outline'} color={color} />
+                    ),
+                }}
+            />
+            <Tabs.Screen
+                name="TermsOfService"
+                options={{
+                    title: 'Terms',
+                    tabBarIcon: ({ color, focused }) => (
+                        <TabBarIcon name={focused ? 'document' : 'document-outline'} color={color} />
+                    ),
+                }}
+            />
         </Tabs>
     );
 }
