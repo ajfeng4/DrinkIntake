@@ -9,4 +9,5 @@ export type RootStackParamList = {
     '+not-found': undefined;
     SignUp: undefined;
     SignIn: undefined;
+    'VoiceRecorder': undefined;
 };

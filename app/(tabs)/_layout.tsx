@@ -65,6 +65,7 @@ export default function TabLayout() {
                 name="VoiceRecorder"
                 options={{
                     title: 'Voice Recorder',
+                    tabBarStyle: { display: 'none' },
                     tabBarIcon: ({ color, focused }) => (
                         <TabBarIcon name={focused ? 'mic' : 'mic-outline'} color={color} />
                     ),
