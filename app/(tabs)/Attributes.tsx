@@ -16,27 +16,107 @@ export default function Attributes({ navigation }: any) {
         <View style={styles.container}>
             <Text style={styles.title}>Let us get to know you!</Text>
             <Text style={styles.subtitle}>Please enter your attributes</Text>
-            <View style={styles.attributeContainer}>
-                {['18-21', '21-25', '25-30', '30-40'].map((range) => (
-                    <TouchableOpacity
-                        key={range}
-                        style={[
-                            styles.attributeButton,
-                            selectedAttributes.includes(range) && styles.selectedButton,
-                        ]}
-                        onPress={() => toggleAttribute(range)}
-                    >
-                        <Text
+
+            <View style={styles.attributeGroup}>
+                <Text style={styles.groupLabel}>Age Range</Text>
+                <View style={styles.attributeContainer}>
+                    {['18-21', '21-25', '25-30', '30-40'].map((range) => (
+                        <TouchableOpacity
+                            key={range}
                             style={[
-                                styles.attributeText,
-                                selectedAttributes.includes(range) && styles.selectedText,
+                                styles.attributeButton,
+                                selectedAttributes.includes(range) && styles.selectedButton,
                             ]}
+                            onPress={() => toggleAttribute(range)}
                         >
-                            {range}
-                        </Text>
-                    </TouchableOpacity>
-                ))}
+                            <Text
+                                style={[
+                                    styles.attributeText,
+                                    selectedAttributes.includes(range) && styles.selectedText,
+                                ]}
+                            >
+                                {range}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
             </View>
+
+            <View style={styles.attributeGroup}>
+                <Text style={styles.groupLabel}>Weight</Text>
+                <View style={styles.attributeContainer}>
+                    {['80-100', '100-120', '120-150', '150-200'].map((weight) => (
+                        <TouchableOpacity
+                            key={weight}
+                            style={[
+                                styles.attributeButton,
+                                selectedAttributes.includes(weight) && styles.selectedButton,
+                            ]}
+                            onPress={() => toggleAttribute(weight)}
+                        >
+                            <Text
+                                style={[
+                                    styles.attributeText,
+                                    selectedAttributes.includes(weight) && styles.selectedText,
+                                ]}
+                            >
+                                {weight}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            </View>
+
+            <View style={styles.attributeGroup}>
+                <Text style={styles.groupLabel}>Height</Text>
+                <View style={styles.attributeContainer}>
+                    {['Lower-4\'0', '4\'0-5\'0', '5\'0-6\'0', '6\'0-Higher'].map((height) => (
+                        <TouchableOpacity
+                            key={height}
+                            style={[
+                                styles.attributeButton,
+                                selectedAttributes.includes(height) && styles.selectedButton,
+                            ]}
+                            onPress={() => toggleAttribute(height)}
+                        >
+                            <Text
+                                style={[
+                                    styles.attributeText,
+                                    selectedAttributes.includes(height) && styles.selectedText,
+                                ]}
+                            >
+                                {height}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            </View>
+
+            <View style={styles.attributeGroup}>
+                <Text style={styles.groupLabel}>Pregnancy</Text>
+                <View style={styles.attributeContainer}>
+                    {['None', '0w-5w', '5w-12w', '12w-16w'].map((pregnancy) => (
+                        <TouchableOpacity
+                            key={pregnancy}
+                            style={[
+                                styles.attributeButton,
+                                selectedAttributes.includes(pregnancy) && styles.selectedButton,
+                            ]}
+                            onPress={() => toggleAttribute(pregnancy)}
+                        >
+                            <Text
+                                style={[
+                                    styles.attributeText,
+                                    selectedAttributes.includes(pregnancy) && styles.selectedText,
+                                ]}
+                            >
+                                {pregnancy}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            </View>
+
             <TouchableOpacity
                 style={styles.button}
                 onPress={() => navigation.navigate('TermsOfService')}
@@ -64,13 +144,20 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#6c6c6c',
         textAlign: 'center',
-        marginBottom: 30,
+        marginBottom: 20,
+    },
+    attributeGroup: {
+        marginBottom: 20,
+    },
+    groupLabel: {
+        fontSize: 16,
+        color: '#6c6c6c',
+        marginBottom: 10,
     },
     attributeContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'center',
-        marginBottom: 20,
     },
     attributeButton: {
         padding: 10,
@@ -78,12 +165,15 @@ const styles = StyleSheet.create({
         borderColor: '#6c6c6c',
         borderRadius: 20,
         margin: 5,
+        minWidth: 70,
+        alignItems: 'center',
     },
     selectedButton: {
         backgroundColor: '#328DD8',
     },
     attributeText: {
         color: '#6c6c6c',
+        fontSize: 10,
     },
     selectedText: {
         color: '#fff',
