@@ -1,10 +1,34 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { supabase } from '@/supabaseClient';
 
 export default function TermsOfService({ navigation }: any) {
     const [isChecked, setIsChecked] = useState(false);
 
     const toggleCheckbox = () => setIsChecked(!isChecked);
+
+    const handleContinue = async () => {
+        const { data, error: userError } = await supabase.auth.getUser();
+        if (userError || !data.user) {
+            console.error('Error fetching user:', userError?.message || 'No user found');
+            Alert.alert('Error', 'Unable to fetch user information.');
+            return;
+        }
+
+        const userId = data.user.id;
+
+        const { error } = await supabase.from('profiles').upsert({
+            id: userId,
+            terms_accepted: true,
+        });
+
+        if (error) {
+            console.error('Error updating terms acceptance:', error.message);
+            Alert.alert('Error', 'Failed to save your acceptance.');
+        } else {
+            navigation.navigate('Explore');
+        }
+    };
 
     return (
         <View style={styles.container}>
@@ -32,7 +56,7 @@ export default function TermsOfService({ navigation }: any) {
             <TouchableOpacity
                 style={[styles.button, { opacity: isChecked ? 1 : 0.5 }]}
                 disabled={!isChecked}
-                onPress={() => navigation.navigate('Explore')}
+                onPress={handleContinue}
             >
                 <Text style={styles.buttonText}>Continue</Text>
             </TouchableOpacity>
