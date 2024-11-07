@@ -57,7 +57,7 @@ export default function TabLayout() {
                 options={{
                     title: 'History',
                     tabBarIcon: ({ color, focused }) => (
-                        <TabBarIcon name={focused ? 'code-slash' : 'code-slash-outline'} color={color} />
+                        <TabBarIcon name={focused ? 'calendar' : 'calendar-outline'} color={color} />
                     ),
                 }}
             />
