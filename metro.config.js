@@ -7,4 +7,7 @@ defaultConfig.resolver.assetExts.push(
   'json'
 );
 
+// Add this to ensure JSON files are processed correctly
+defaultConfig.resolver.sourceExts.push('json');
+
 module.exports = defaultConfig; 

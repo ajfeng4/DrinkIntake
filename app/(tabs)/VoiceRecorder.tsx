@@ -28,16 +28,24 @@ const extractSpectrogram = async (audioBuffer: ArrayBuffer): Promise<tf.Tensor> 
             const spectrogram = tf.abs(stft);
             console.log('Raw spectrogram shape:', spectrogram.shape);
             
-            // Normalize and reshape
-            const maxVal = spectrogram.max();
-            const normalizedSpectrogram = spectrogram.div(maxVal)
-                .resizeBilinear([128, 63])  // Resize to expected dimensions
-                .expandDims(-1)  // Add channel dimension
-                .expandDims(0);  // Add batch dimension
+            // Add channel dimension first
+            const spectrogramWithChannel = spectrogram.expandDims(-1);
+            console.log('Spectrogram with channel shape:', spectrogramWithChannel.shape);
             
-            console.log('Final spectrogram shape:', normalizedSpectrogram.shape);
+            // Resize with proper dimensions
+            const resized = tf.image.resizeBilinear(spectrogramWithChannel, [128, 63]);
+            console.log('Resized shape:', resized.shape);
             
-            return normalizedSpectrogram;
+            // Normalize
+            const maxVal = resized.max();
+            const minVal = resized.min();
+            const normalizedSpectrogram = resized.sub(minVal).div(maxVal.sub(minVal));
+            
+            // Add batch dimension
+            const finalTensor = normalizedSpectrogram.expandDims(0);
+            console.log('Final tensor shape:', finalTensor.shape);
+            
+            return finalTensor;
         });
     } catch (error) {
         console.error('Error in extractSpectrogram:', error);
@@ -146,28 +154,68 @@ const VoiceRecorder: React.FC = () => {
                 await tf.ready();
                 console.log('TF Ready');
 
-                // Load model files
+                // Define model paths
                 const modelJSON = require('../../assets/tfjs_model/model.json');
-                
-                // Use require.resolveAssetSource to get the correct path
-                const weightFiles = [
+                const weights = [
                     require('../../assets/tfjs_model/group1-shard1of4.bin'),
                     require('../../assets/tfjs_model/group1-shard2of4.bin'),
                     require('../../assets/tfjs_model/group1-shard3of4.bin'),
                     require('../../assets/tfjs_model/group1-shard4of4.bin')
-                ].map(require.resolveAssetSource);
+                ];
 
-                // Load the model using paths
+                // Log model structure
+                console.log('Model JSON structure:', JSON.stringify(modelJSON.modelTopology.model_config.config.layers[0], null, 2));
+                console.log('Weight files loaded:', weights.length);
+
+                // Try loading with explicit input layer configuration
+                const customModelJSON = {
+                    ...modelJSON,
+                    modelTopology: {
+                        ...modelJSON.modelTopology,
+                        model_config: {
+                            ...modelJSON.modelTopology.model_config,
+                            config: {
+                                ...modelJSON.modelTopology.model_config.config,
+                                layers: [
+                                    {
+                                        class_name: "InputLayer",
+                                        config: {
+                                            batch_input_shape: [null, 128, 63, 1],
+                                            dtype: "float32",
+                                            sparse: false,
+                                            name: "input_layer"
+                                        }
+                                    },
+                                    ...modelJSON.modelTopology.model_config.config.layers.slice(1)
+                                ]
+                            }
+                        }
+                    }
+                };
+
+                // Load the model
                 const loadedModel = await tf.loadLayersModel(
-                    bundleResourceIO(modelJSON, weightFiles)
+                    bundleResourceIO(customModelJSON, weights),
+                    { strict: false }
                 );
-                
+
+                // Compile the model with the correct loss function name
+                loadedModel.compile({
+                    optimizer: 'adam',
+                    loss: 'binaryCrossentropy',
+                    metrics: ['accuracy']
+                });
+
                 console.log('Model loaded successfully');
                 loadedModel.summary();
                 setModel(loadedModel);
 
             } catch (error) {
                 console.error('Error loading model:', error);
+                if (error instanceof Error) {
+                    console.error('Error message:', error.message);
+                    console.error('Error stack:', error.stack);
+                }
             }
         };
 
