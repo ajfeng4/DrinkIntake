@@ -68,7 +68,6 @@ export default function TabLayout() {
                     tabBarIcon: ({ color, focused }) => (
                         <TabBarIcon name={focused ? 'mic' : 'mic-outline'} color={color} />
                     ),
-                    tabBarStyle: { display: 'none' },
                     tabBarButton: () => null,
                 }}
             />
@@ -79,7 +78,10 @@ export default function TabLayout() {
                     tabBarIcon: ({ color, focused }) => (
                         <TabBarIcon name={focused ? 'person' : 'person-outline'} color={color} />
                     ),
+                    tabBarStyle: { display: 'none' },
+                    tabBarButton: () => null,
                 }}
+
             />
             <Tabs.Screen
                 name="Attributes"
@@ -88,6 +90,8 @@ export default function TabLayout() {
                     tabBarIcon: ({ color, focused }) => (
                         <TabBarIcon name={focused ? 'list' : 'list-outline'} color={color} />
                     ),
+                    tabBarStyle: { display: 'none' },
+                    tabBarButton: () => null,
                 }}
             />
             <Tabs.Screen
@@ -97,6 +101,8 @@ export default function TabLayout() {
                     tabBarIcon: ({ color, focused }) => (
                         <TabBarIcon name={focused ? 'document' : 'document-outline'} color={color} />
                     ),
+                    tabBarStyle: { display: 'none' },
+                    tabBarButton: () => null,
                 }}
             />
         </Tabs>
