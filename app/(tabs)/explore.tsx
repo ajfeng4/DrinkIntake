@@ -5,16 +5,16 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Feather from '@expo/vector-icons/Feather';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import SimpleLineIcons from '@expo/vector-icons/SimpleLineIcons';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../types';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DrinkIntakeHeader from '@/components/DrinkIntakeHeader';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../types';
 
-type ExploreScreenProps = {
-    navigation: StackNavigationProp<RootStackParamList, 'ExploreScreen'>;
-};
+type NavigationProp = StackNavigationProp<RootStackParamList>;
 
-export default function ExploreScreen({ navigation }: ExploreScreenProps) {
+export default function ExploreScreen() {
+    const navigation = useNavigation<NavigationProp>();
     const insets = useSafeAreaInsets();
 
     return (
@@ -73,7 +73,7 @@ export default function ExploreScreen({ navigation }: ExploreScreenProps) {
 
                 <TouchableOpacity
                     style={styles.button}
-                    onPress={() => navigation.navigate('SearchPage')}
+                    onPress={() => navigation.navigate('WaterIntakeStatistics')}
                 >
                     <Feather name="alert-circle" size={40} color="#328DD8" />
                     <Text style={styles.buttonText}>Historical Alerts</Text>
@@ -81,7 +81,7 @@ export default function ExploreScreen({ navigation }: ExploreScreenProps) {
 
                 <TouchableOpacity
                     style={styles.button}
-                    onPress={() => navigation.navigate('SearchPage')}
+                    onPress={() => navigation.navigate('WaterIntakeStatistics')}
                 >
                     <AntDesign name="setting" size={40} color="#328DD8" />
                     <Text style={styles.buttonText}>User Settings</Text>
@@ -89,10 +89,18 @@ export default function ExploreScreen({ navigation }: ExploreScreenProps) {
 
                 <TouchableOpacity
                     style={styles.button}
-                    onPress={() => navigation.navigate('SearchPage')}
+                    onPress={() => navigation.navigate('WaterIntakeStatistics')}
                 >
                     <SimpleLineIcons name="cup" size={40} color="#328DD8" />
                     <Text style={styles.buttonText}>Current Water Intake</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={styles.button}
+                    onPress={() => navigation.navigate('VoiceRecorder')}
+                >
+                    <SimpleLineIcons name="microphone" size={40} color="#328DD8" />
+                    <Text style={styles.buttonText}>Voice Recordings</Text>
                 </TouchableOpacity>
             </ScrollView>
         </SafeAreaView>
