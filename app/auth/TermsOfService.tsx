@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { supabase } from '@/supabaseClient';
-
-export default function TermsOfService({ navigation }: any) {
+import { useNavigation } from '@react-navigation/native';
+export default function TermsOfService() {
+    const navigation = useNavigation();
     const [isChecked, setIsChecked] = useState(false);
 
     const toggleCheckbox = () => setIsChecked(!isChecked);
@@ -26,7 +27,7 @@ export default function TermsOfService({ navigation }: any) {
             console.error('Error updating terms acceptance:', error.message);
             Alert.alert('Error', 'Failed to save your acceptance.');
         } else {
-            navigation.navigate('Explore');
+            navigation.replace('(tabs)');
         }
     };
 
