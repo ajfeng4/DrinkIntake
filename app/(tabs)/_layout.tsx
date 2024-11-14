@@ -62,11 +62,20 @@ export default function TabLayout() {
                 }}
             />
             <Tabs.Screen
+                name="Settings"
+                options={{
+                    title: 'Settings',
+                    tabBarIcon: ({ color, focused }) => (
+                        <TabBarIcon name={focused ? 'settings' : 'settings-outline'} color={color} />
+                    ),
+                }}
+            />
+            <Tabs.Screen
                 name="VoiceRecorder"
                 options={{
                     title: 'Voice Recorder',
                     tabBarIcon: ({ color, focused }) => (
-                        <TabBarIcon name={focused ? 'mic' : 'mic-outline'} color={color} />
+                        <TabBarIcon name={focused ? 'settings' : 'settings-outline'} color={color} />
                     ),
                     tabBarButton: () => null,
                 }}
