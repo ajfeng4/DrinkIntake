@@ -186,58 +186,56 @@ const VoiceRecorder: React.FC = () => {
                     body: formData
                 });
             
-                // Check if the response was successful
                 if (!response.ok) {
                     console.error(`Error: ${response.status} ${response.statusText}`);
                     return;
                 }
             
-                // Parse the JSON response
-                const { result, confidence } = await response.json();
-                console.log('Predicted class:', result, 'Confidence:', confidence);
+                const responseData = await response.json();
+                const predictionResult = responseData["Predicted class"];
+                console.log('Predicted class:', predictionResult);
             
+                if (uri && user) {
+                    const fileName = `${user.id}/${Date.now()}.wav`;
+                    console.log('File name:', fileName);
+    
+                    // Read the file content
+                    const fileContent = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' });
+                    
+                    // Convert to ArrayBuffer
+                    const buffer = Buffer.from(fileContent, 'base64');
+                    
+                    // Upload using the raw buffer
+                    const { error: uploadError } = await supabase.storage
+                        .from('recordings')
+                        .upload(fileName, buffer.buffer, {
+                            contentType: 'audio/wav',
+                            upsert: false,
+                        });
+    
+                    if (uploadError) {
+                        console.error('Error uploading file:', uploadError);
+                        return;
+                    }
+    
+                    console.log('File uploaded successfully');
+                    console.log('Inserting recording into database for user ID:', user.id);
+                    
+                    const { data, error: insertError } = await supabase
+                        .from('recordings')
+                        .insert([{ user_id: user.id, file_url: fileName, prediction_class: predictionResult}]);
+    
+                    if (insertError) {
+                        console.error('Error inserting recording:', insertError);
+                        return;
+                    }
+                    
+                    console.log('Recording inserted successfully:', data);
+                    fetchRecordings();
+                }
             } catch (error) {
                 // Log any errors that occur during fetch
                 console.error('Failed to fetch the API:', error);
-            }
-            
-            if (uri && user) {
-                const fileName = `${user.id}/${Date.now()}.wav`;
-                console.log('File name:', fileName);
-    
-                // Read the file content
-                const fileContent = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' });
-                
-                // Convert to ArrayBuffer
-                const buffer = Buffer.from(fileContent, 'base64');
-                
-                // Upload using the raw buffer
-                const { error: uploadError } = await supabase.storage
-                    .from('recordings')
-                    .upload(fileName, buffer.buffer, {
-                        contentType: 'audio/wav',
-                        upsert: false,
-                    });
-    
-                if (uploadError) {
-                    console.error('Error uploading file:', uploadError);
-                    return;
-                }
-    
-                console.log('File uploaded successfully');
-                console.log('Inserting recording into database for user ID:', user.id);
-                
-                const { data, error: insertError } = await supabase
-                    .from('recordings')
-                    .insert([{ user_id: user.id, file_url: fileName, prediction_class: result}]);
-    
-                if (insertError) {
-                    console.error('Error inserting recording:', insertError);
-                    return;
-                }
-                
-                console.log('Recording inserted successfully:', data);
-                fetchRecordings();
             }
         } catch (error) {
             console.error('Error in recordAndClassify:', error);
