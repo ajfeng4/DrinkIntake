@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { supabase } from '@/supabaseClient';
+import { useNavigation } from '@react-navigation/native';
 
-export default function FirstAndLastName({ navigation }: any) {
+export default function FirstAndLastName() {
+    const navigation = useNavigation();
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
 
@@ -15,8 +17,9 @@ export default function FirstAndLastName({ navigation }: any) {
         }
 
         const userId = data.user.id;
+        console.log("Authenticated user ID:", userId);
 
-        const { error } = await supabase.from('profiles').upsert({
+        const { error } = await supabase.from('profiles').insert({
             id: userId,
             first_name: firstName,
             last_name: lastName,

@@ -35,7 +35,7 @@ export default function TabLayout() {
             }}
         >
             <Tabs.Screen
-                name="explore"
+                name="ExploreScreen"
                 options={{
                     title: 'Home',
                     tabBarIcon: ({ color, focused }) => (
@@ -44,7 +44,7 @@ export default function TabLayout() {
                 }}
             />
             <Tabs.Screen
-                name="statistics"
+                name="WaterIntakeStatistics"
                 options={{
                     title: 'Statistics',
                     tabBarIcon: ({ color, focused }) => (
@@ -68,40 +68,6 @@ export default function TabLayout() {
                     tabBarIcon: ({ color, focused }) => (
                         <TabBarIcon name={focused ? 'mic' : 'mic-outline'} color={color} />
                     ),
-                    tabBarButton: () => null,
-                }}
-            />
-            <Tabs.Screen
-                name="FirstAndLastName"
-                options={{
-                    title: 'Name',
-                    tabBarIcon: ({ color, focused }) => (
-                        <TabBarIcon name={focused ? 'person' : 'person-outline'} color={color} />
-                    ),
-                    tabBarStyle: { display: 'none' },
-                    tabBarButton: () => null,
-                }}
-
-            />
-            <Tabs.Screen
-                name="Attributes"
-                options={{
-                    title: 'Attributes',
-                    tabBarIcon: ({ color, focused }) => (
-                        <TabBarIcon name={focused ? 'list' : 'list-outline'} color={color} />
-                    ),
-                    tabBarStyle: { display: 'none' },
-                    tabBarButton: () => null,
-                }}
-            />
-            <Tabs.Screen
-                name="TermsOfService"
-                options={{
-                    title: 'Terms',
-                    tabBarIcon: ({ color, focused }) => (
-                        <TabBarIcon name={focused ? 'document' : 'document-outline'} color={color} />
-                    ),
-                    tabBarStyle: { display: 'none' },
                     tabBarButton: () => null,
                 }}
             />

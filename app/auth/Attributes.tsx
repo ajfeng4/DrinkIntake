@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { supabase } from '@/supabaseClient';
+import { useNavigation } from '@react-navigation/native';
 
-export default function Attributes({ navigation }: any) {
+export default function Attributes() {
+    const navigation = useNavigation();
     const [selectedAttributes, setSelectedAttributes] = useState<{
         ageRange: string;
         weight: string;
