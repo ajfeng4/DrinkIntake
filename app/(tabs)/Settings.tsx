@@ -1,10 +1,12 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons, MaterialIcons, Feather, AntDesign } from '@expo/vector-icons';
+import DrinkIntakeHeader from '@/components/DrinkIntakeHeader';
 
 export default function Settings() {
     return (
         <View style={styles.container}>
+            <DrinkIntakeHeader />
             {settingsOptions.map((option, index) => (
                 <TouchableOpacity key={index} style={styles.option}>
                     {option.icon}
@@ -54,6 +56,7 @@ const settingsOptions = [
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        marginTop: 20,
         backgroundColor: '#fff',
         paddingHorizontal: 20,
         paddingVertical: 30,
@@ -78,3 +81,4 @@ const styles = StyleSheet.create({
         color: '#A0A0A0',
     },
 });
+
