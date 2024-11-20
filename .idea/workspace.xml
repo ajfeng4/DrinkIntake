@@ -6,9 +6,14 @@
   <component name="ChangeListManager">
     <list default="true" id="972715f0-db53-4418-850a-e55d1b9c790a" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/(tabs)/VoiceRecorder.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(tabs)/VoiceRecorder.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/(tabs)/_layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(tabs)/_layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.json" beforeDir="false" afterPath="$PROJECT_DIR$/app.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(tabs)/ExploreScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(tabs)/ExploreScreen.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(tabs)/WaterIntakeStatistics.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(tabs)/WaterIntakeStatistics.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/_layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/_layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/auth/SignIn.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/auth/SignIn.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/auth/SignUp.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/auth/SignUp.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/types.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/types/types.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -42,7 +47,7 @@
   "keyToString": {
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "VoiceRecorder",
+    "git-widget-placeholder": "Onboarding",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -52,6 +57,11 @@
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\xampp\htdocs\DrinkIntakeResearch\types" />
+    </key>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -65,6 +75,7 @@
       <workItem from="1730391126024" duration="2469000" />
       <workItem from="1730396705065" duration="602000" />
       <workItem from="1730682212123" duration="4697000" />
+      <workItem from="1732138222457" duration="1956000" />
     </task>
     <servers />
   </component>

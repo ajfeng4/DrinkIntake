@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DrinkIntakeHeader from '@/components/DrinkIntakeHeader';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../types';
+import { RootStackParamList } from '../../types/types';
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 

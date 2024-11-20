@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LineChart } from 'react-native-chart-kit';
 import DrinkIntakeHeader from '@/components/DrinkIntakeHeader';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../types'; // Adjust the import path as needed
+import { RootStackParamList } from '../../types/types'; // Adjust the import path as needed
 import CircularProgress from 'react-native-circular-progress-indicator';
 
 type StatisticsScreenProps = {
