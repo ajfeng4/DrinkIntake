@@ -7,14 +7,10 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import SimpleLineIcons from '@expo/vector-icons/SimpleLineIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DrinkIntakeHeader from '@/components/DrinkIntakeHeader';
-import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../../types/types';
-
-type NavigationProp = StackNavigationProp<RootStackParamList>;
+import { useRouter } from 'expo-router';
 
 export default function ExploreScreen() {
-    const navigation = useNavigation<NavigationProp>();
+    const router = useRouter();
     const insets = useSafeAreaInsets();
 
     return (
@@ -33,7 +29,7 @@ export default function ExploreScreen() {
 
                 <TouchableOpacity
                     style={styles.button}
-                    onPress={() => navigation.navigate('ReviewGoals')}
+                    onPress={() => router.push('/WaterIntakeStatistics')}
                 >
                     <Ionicons name="calendar-outline" size={40} color="#328DD8" />
                     <Text style={styles.buttonText}>Review Goals</Text>
@@ -41,7 +37,7 @@ export default function ExploreScreen() {
 
                 <TouchableOpacity
                     style={styles.button}
-                    onPress={() => navigation.navigate('TrackWaterIntake')}
+                    onPress={() => router.push('/TrackWaterIntake')}
                 >
                     <Ionicons name="water-outline" size={40} color="#328DD8" />
                     <Text style={styles.buttonText}>Track Your Water Intake</Text>
@@ -49,7 +45,7 @@ export default function ExploreScreen() {
 
                 <TouchableOpacity
                     style={styles.button}
-                    onPress={() => navigation.navigate('WaterIntakeStatistics')}
+                    onPress={() => router.push('/WaterIntakeStatistics')}
                 >
                     <Ionicons name="stats-chart-outline" size={40} color="#328DD8" />
                     <Text style={styles.buttonText}>Water Intake Statistics</Text>
@@ -57,7 +53,7 @@ export default function ExploreScreen() {
 
                 <TouchableOpacity
                     style={styles.button}
-                    onPress={() => navigation.navigate('GoalScoreboard')}
+                    onPress={() => router.push('/WaterIntakeStatistics')}
                 >
                     <Ionicons name="trophy-outline" size={40} color="#328DD8" />
                     <Text style={styles.buttonText}>Goal Scoreboard</Text>
@@ -65,7 +61,7 @@ export default function ExploreScreen() {
 
                 <TouchableOpacity
                     style={styles.button}
-                    onPress={() => navigation.navigate('SearchPage')}
+                    onPress={() => router.push('/WaterIntakeStatistics')}
                 >
                     <Ionicons name="search-outline" size={40} color="#328DD8" />
                     <Text style={styles.buttonText}>Search Page</Text>
@@ -73,7 +69,7 @@ export default function ExploreScreen() {
 
                 <TouchableOpacity
                     style={styles.button}
-                    onPress={() => navigation.navigate('WaterIntakeStatistics')}
+                    onPress={() => router.push('/WaterIntakeStatistics')}
                 >
                     <Feather name="alert-circle" size={40} color="#328DD8" />
                     <Text style={styles.buttonText}>Historical Alerts</Text>
@@ -81,7 +77,7 @@ export default function ExploreScreen() {
 
                 <TouchableOpacity
                     style={styles.button}
-                    onPress={() => navigation.navigate('WaterIntakeStatistics')}
+                    onPress={() => router.push('/Settings')}
                 >
                     <AntDesign name="setting" size={40} color="#328DD8" />
                     <Text style={styles.buttonText}>User Settings</Text>
@@ -89,7 +85,7 @@ export default function ExploreScreen() {
 
                 <TouchableOpacity
                     style={styles.button}
-                    onPress={() => navigation.navigate('WaterIntakeStatistics')}
+                    onPress={() => router.push('/WaterIntakeStatistics')}
                 >
                     <SimpleLineIcons name="cup" size={40} color="#328DD8" />
                     <Text style={styles.buttonText}>Current Water Intake</Text>
@@ -97,7 +93,7 @@ export default function ExploreScreen() {
 
                 <TouchableOpacity
                     style={styles.button}
-                    onPress={() => navigation.navigate('VoiceRecorder')}
+                    onPress={() => router.push('/VoiceRecorder')}
                 >
                     <SimpleLineIcons name="microphone" size={40} color="#328DD8" />
                     <Text style={styles.buttonText}>Voice Recordings</Text>

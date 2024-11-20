@@ -6,15 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="972715f0-db53-4418-850a-e55d1b9c790a" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.json" beforeDir="false" afterPath="$PROJECT_DIR$/app.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/(tabs)/ExploreScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(tabs)/ExploreScreen.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/(tabs)/WaterIntakeStatistics.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(tabs)/WaterIntakeStatistics.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/_layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/_layout.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/auth/SignIn.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/auth/SignIn.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/auth/SignUp.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/auth/SignUp.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/types.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/types/types.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,20 +35,20 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "Onboarding",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "ts.external.directory.path": "C:\\xampp\\htdocs\\DrinkIntakeResearch\\node_modules\\typescript\\lib",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;Onboarding&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;C:\\xampp\\htdocs\\DrinkIntakeResearch\\node_modules\\typescript\\lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\xampp\htdocs\DrinkIntakeResearch\types" />
@@ -75,7 +67,8 @@
       <workItem from="1730391126024" duration="2469000" />
       <workItem from="1730396705065" duration="602000" />
       <workItem from="1730682212123" duration="4697000" />
-      <workItem from="1732138222457" duration="1956000" />
+      <workItem from="1732138222457" duration="2055000" />
+      <workItem from="1732143829216" duration="895000" />
     </task>
     <servers />
   </component>
