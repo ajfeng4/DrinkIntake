@@ -360,8 +360,10 @@ const formatAxisLabel = (value: number, timeSpan: string) => {
               xKey="hour"
               yKeys={["intake"]}
               domain={{ 
-                x: [0, safeData.length-1],
-                y: [0, yAxisMax] 
+                x: timeSpan === 'day' ? 
+                  [-3, safeData.length+1] : // More space for day view
+                  [-1, safeData.length],  // Less space for week/month
+                y: [0, yAxisMax],
               }}
               axisOptions={{
                 font,
@@ -404,8 +406,8 @@ const formatAxisLabel = (value: number, timeSpan: string) => {
                 labelColor: isDark ? "white" : "black",
                 tickCount: { 
                   x: timeSpan === 'week' ? 7 : // Exactly 7 ticks for week view
-                     timeSpan === 'month' ? 12 : 
-                     timeSpan === 'year' ? 12 : 6, 
+                    timeSpan === 'month' ? 12 : 
+                    timeSpan === 'year' ? 12 : 6, 
                   y: 5 
                 },
               }}
@@ -427,6 +429,7 @@ const formatAxisLabel = (value: number, timeSpan: string) => {
                         topLeft: 10,
                         topRight: 10,
                       }}
+                      barWidth={(chartBounds.right - chartBounds.left) / (safeData.length + 2)}
                     >
                       <LinearGradient
                         start={vec(0, 0)}
@@ -664,11 +667,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
-    padding: 16,
   },
   chartContainer: {
     height: 300,
     paddingTop: 10,
+    paddingHorizontal: -40,
+    flex: 1,
   },
   graphTitle: {
     fontSize: 18,
