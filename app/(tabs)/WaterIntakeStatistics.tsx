@@ -8,7 +8,6 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types'; // Adjust the import path as needed
 import CircularProgress from 'react-native-circular-progress-indicator';
 import { supabase } from '@/supabaseClient';
-import { BarChart } from 'react-native-chart-kit';
 import { CartesianChart, Bar, useChartPressState } from "victory-native";
 import { Circle, useFont, vec } from "@shopify/react-native-skia";
 import { LinearGradient, Text as SKText } from "@shopify/react-native-skia";
@@ -40,107 +39,6 @@ const processHistogramData = (data) => {
   return hourlyData;
 };
 
-// Add these helper functions
-const getDayData = async () => {
-  try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const { data, error } = await supabase
-      .from('recordings')
-      .select('created_at')
-      .eq('prediction_class', 'Swallowing')
-      .gte('created_at', today.toISOString())
-      .lt('created_at', new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString());
-
-    return processHistogramData(data || []);
-  } catch (error) {
-    console.error('Error fetching day data:', error);
-    return Array(24).fill(0);
-  }
-};
-
-const getWeekData = async () => {
-  try {
-    const today = new Date();
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay());
-    startOfWeek.setHours(0, 0, 0, 0);
-
-    const { data, error } = await supabase
-      .from('recordings')
-      .select('created_at')
-      .eq('prediction_class', 'Swallowing')
-      .gte('created_at', startOfWeek.toISOString())
-      .lt('created_at', today.toISOString());
-
-    // Process data into days of week (0-6)
-    const weekData = Array(7).fill(0);
-    data?.forEach(record => {
-      const day = new Date(record.created_at).getDay();
-      weekData[day]++;
-    });
-
-    return weekData;
-  } catch (error) {
-    console.error('Error fetching week data:', error);
-    return Array(7).fill(0);
-  }
-};
-
-const getMonthData = async () => {
-  try {
-    const today = new Date();
-    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-
-    const { data, error } = await supabase
-      .from('recordings')
-      .select('created_at')
-      .eq('prediction_class', 'Swallowing')
-      .gte('created_at', startOfMonth.toISOString())
-      .lt('created_at', today.toISOString());
-
-    // Process data into days of month (1-31)
-    const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-    const monthData = Array(daysInMonth).fill(0);
-    data?.forEach(record => {
-      const day = new Date(record.created_at).getDate() - 1;
-      monthData[day]++;
-    });
-
-    return monthData;
-  } catch (error) {
-    console.error('Error fetching month data:', error);
-    return Array(31).fill(0);
-  }
-};
-
-const getYearData = async () => {
-  try {
-    const today = new Date();
-    const startOfYear = new Date(today.getFullYear(), 0, 1);
-
-    const { data, error } = await supabase
-      .from('recordings')
-      .select('created_at')
-      .eq('prediction_class', 'Swallowing')
-      .gte('created_at', startOfYear.toISOString())
-      .lt('created_at', today.toISOString());
-
-    // Process data into months (0-11)
-    const yearData = Array(12).fill(0);
-    data?.forEach(record => {
-      const month = new Date(record.created_at).getMonth();
-      yearData[month]++;
-    });
-
-    return yearData;
-  } catch (error) {
-    console.error('Error fetching year data:', error);
-    return Array(12).fill(0);
-  }
-};
-
 export default function StatisticsScreen({ navigation }: StatisticsScreenProps) {
   const insets = useSafeAreaInsets();
   const [selectedView, setSelectedView] = useState('Day');
@@ -149,16 +47,53 @@ export default function StatisticsScreen({ navigation }: StatisticsScreenProps) 
   const dropdownRef = useRef(null);
 
   // Daily goal stats
-  const dailyGoal = 2000;
+  const dailyGoal = 4;
   const [currentIntake, setCurrentIntake] = useState(0);
 
   const [timeSpan, setTimeSpan] = useState('day'); // 'day', 'week', 'month', 'year'
   const [graphData, setGraphData] = useState<number[]>([]);
 
+  // Add this state to store daily completions
+  const [weeklyCompletions, setWeeklyCompletions] = useState(Array(7).fill(false));
 
   useEffect(() => {
     fetchTodaySwallowingCount();
   }, []);
+  
+  // Add this useEffect to fetch and check daily completions
+  useEffect(() => {
+    const fetchWeeklyCompletions = async () => {
+      const today = new Date();
+      const startOfWeek = new Date(today);
+      startOfWeek.setDate(today.getDate() - today.getDay());
+
+      const { data, error } = await supabase
+        .from('recordings')
+        .select('created_at, prediction_class')
+        .eq('prediction_class', 'Swallowing')
+        .gte('created_at', startOfWeek.toISOString())
+        .lt('created_at', new Date().toISOString());
+
+      if (error) {
+        console.error('Error fetching weekly data:', error);
+        return;
+      }
+
+      // Group swallows by day and check against daily goal
+      const completions = Array(7).fill(false);
+      data.forEach(record => {
+        const day = new Date(record.created_at).getDay();
+        const dayCount = data.filter(r => 
+          new Date(r.created_at).getDay() === day
+        ).length;
+        completions[day] = dayCount >= dailyGoal;
+      });
+
+      setWeeklyCompletions(completions);
+    };
+
+    fetchWeeklyCompletions();
+  }, [dailyGoal]);
 
   const fetchTodaySwallowingCount = async () => {
     try {
@@ -326,18 +261,34 @@ const formatAxisLabel = (value: number, timeSpan: string) => {
 
   const isDark = colorMode === "dark";
   console.log("Original graphData:", graphData);
+  
+  // Add default data if graphData is empty
+  const defaultData = Array(24).fill(0);
+  const safeData = graphData?.length ? graphData : defaultData;
+  
+  // Debug log to check the transformed data
+  const transformedData = safeData.map((value, index) => ({
+    hour: index,
+    intake: Math.max(0, Number(value) || 0),
+  }));
+  console.log("Transformed Data:", transformedData);
 
   const value = useDerivedValue(() => {
     const rawValue = state.y.intake?.value?.value;
-  
-    console.log("Value derivation:", {
+    const index = state.x.value?.value;
+    
+    console.log("Touch interaction:", {
       rawValue,
-      stateY: state.y.intake?.value,
-      fullState: state
+      index,
+      data: transformedData?.[Math.round(index)]
     });
-    // Ensure we return a properly formatted string
-    return rawValue !== undefined ? `${Math.round(rawValue)} ml` : "0 ml";
-  }, [state]);
+
+    // Get the actual data point value
+    const dataPoint = transformedData?.[Math.round(index)];
+    const intakeValue = dataPoint?.intake ?? 0;
+
+    return `${intakeValue} ml`;
+  }, [state, transformedData]);
 
   const textYPosition = useDerivedValue(() => {
     console.log("Y Position Derivation:", {
@@ -358,18 +309,6 @@ const formatAxisLabel = (value: number, timeSpan: string) => {
       state.x.position.value - toolTipFont.measureText(value.value).width / 2
     );
   }, [value, toolTipFont]);
-
-
-  // Add default data if graphData is empty
-  const defaultData = Array(24).fill(0);
-  const safeData = graphData?.length ? graphData : defaultData;
-  
-  // Debug log to check the transformed data
-  const transformedData = safeData.map((value, index) => ({
-    hour: index,
-    intake: Math.max(0, Number(value) || 0),
-  }));
-  console.log("Transformed Data:", transformedData);
 
   // Calculate safe maximum value
   const maxValue = Math.max(...safeData.map(value => Number(value) || 0));
@@ -422,14 +361,14 @@ const formatAxisLabel = (value: number, timeSpan: string) => {
           <View style={styles.weeklyTrackerContainer}>
             <ThemedText style={styles.weeklyTitle}>Water required per day</ThemedText>
             <View style={styles.weeklyDays}>
-              {weeklyData.map((item, index) => (
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
                 <View key={index} style={styles.dayContainer}>
-                  <View style={[styles.dayIndicator, item.completed && styles.dayCompleted]}>
-                    {item.completed && (
+                  <View style={[styles.dayIndicator, weeklyCompletions[index] && styles.dayCompleted]}>
+                    {weeklyCompletions[index] && (
                       <TabBarIcon name="checkmark" color="#FFF" size={16} />
                     )}
                   </View>
-                  <ThemedText style={styles.dayText}>{item.day}</ThemedText>
+                  <ThemedText style={styles.dayText}>{day}</ThemedText>
                 </View>
               ))}
             </View>
@@ -454,16 +393,14 @@ const formatAxisLabel = (value: number, timeSpan: string) => {
           <ThemedText style={styles.graphTitle}>Drinking Pattern</ThemedText>
           <View style={styles.chartContainer}>
             <CartesianChart
-              data={safeData.map((value, index) => ({
-                hour: index,
-                intake: Math.max(0, Number(value) || 0), // Ensure positive numbers
-              }))}
+              data={transformedData}
               xKey="hour"
               yKeys={["intake"]}
-              // padding={{ left: 40, bottom: 40, right: 20, top: 20 }}
               domain={{ 
-                x: [0, safeData.length - 1],
-                y: [0, yAxisMax] 
+                x: timeSpan === 'day' ? 
+                  [-3, safeData.length+1] : // More space for day view
+                  [-1, safeData.length],  // Less space for week/month
+                y: [0, yAxisMax],
               }}
               axisOptions={{
                 font,
@@ -479,6 +416,13 @@ const formatAxisLabel = (value: number, timeSpan: string) => {
                     if (exactValue === 8) return 'Sep';
                     if (exactValue === 10) return 'Nov';
                     return '';
+                  }
+                  
+                  if (timeSpan === 'week') {
+                    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                    const index = Math.round(value);
+                    // Only show label if it's a valid index
+                    return index >= 0 && index < days.length ? days[index] : '';
                   }
                   
                   let normalizedValue;
@@ -498,7 +442,9 @@ const formatAxisLabel = (value: number, timeSpan: string) => {
                 lineColor: isDark ? "#71717a" : "#d4d4d8",
                 labelColor: isDark ? "white" : "black",
                 tickCount: { 
-                  x: timeSpan === 'month' ? 31 : timeSpan === 'week' ? 7 : timeSpan === 'year' ? 12 : 6, 
+                  x: timeSpan === 'week' ? 7 : // Exactly 7 ticks for week view
+                    timeSpan === 'month' ? 12 : 
+                    timeSpan === 'year' ? 12 : 6, 
                   y: 5 
                 },
               }}
@@ -520,6 +466,7 @@ const formatAxisLabel = (value: number, timeSpan: string) => {
                         topLeft: 10,
                         topRight: 10,
                       }}
+                      barWidth={((chartBounds.right - chartBounds.left) / (safeData.length + 2)) * 0.6}
                     >
                       <LinearGradient
                         start={vec(0, 0)}
@@ -697,10 +644,6 @@ const styles = StyleSheet.create({
     padding: 10,
     color: '#328DD8',
   },
-  chartContainer: {
-    marginTop: 50,
-    marginBottom: 20,
-  },
   chartRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -761,11 +704,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
-    padding: 16,
   },
   chartContainer: {
     height: 300,
-    paddingTop: 60,
+    paddingTop: 10,
+    paddingHorizontal: -40,
+    flex: 1,
   },
   graphTitle: {
     fontSize: 18,
