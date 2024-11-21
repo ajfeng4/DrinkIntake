@@ -1,17 +1,13 @@
 import React, { useState } from 'react';
 import { View, TextInput, Alert, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { supabase } from '@/supabaseClient';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../types';
-import { useNavigation } from '@react-navigation/native';
-
-type SignInScreenNavigationProp = StackNavigationProp<RootStackParamList, 'SignIn'>;
+import { useRouter } from 'expo-router';
 
 export default function SignIn() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [selectedTab, setSelectedTab] = useState('email');
-    const navigation = useNavigation<SignInScreenNavigationProp>();
+    const router = useRouter();
 
     const handleSignin = async () => {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -21,7 +17,7 @@ export default function SignIn() {
         if (error) {
             Alert.alert('Signin error', error.message);
         } else if (data?.user) {
-            navigation.navigate('(tabs)');
+            router.replace('/(tabs)/ExploreScreen');
         }
     };
 
@@ -60,7 +56,7 @@ export default function SignIn() {
                         secureTextEntry
                         style={styles.input}
                     />
-                    <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+                    <TouchableOpacity onPress={() => router.push('/auth/SignUp')}>
                         <Text style={styles.signupText}>Don't have an account? Sign up</Text>
                     </TouchableOpacity>
                 </>
@@ -73,7 +69,7 @@ export default function SignIn() {
                         style={styles.input}
                         keyboardType="phone-pad"
                     />
-                    <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+                    <TouchableOpacity onPress={() => router.push('/auth/SignUp')}>
                         <Text style={styles.signupText}>Don't have an account? Sign up</Text>
                     </TouchableOpacity>
                 </>
@@ -101,6 +97,7 @@ export default function SignIn() {
         </View>
     );
 }
+
 
 const styles = StyleSheet.create({
     container: {

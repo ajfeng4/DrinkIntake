@@ -68,6 +68,8 @@ export default function TabLayout() {
                     tabBarIcon: ({ color, focused }) => (
                         <TabBarIcon name={focused ? 'settings' : 'settings-outline'} color={color} />
                     ),
+                    tabBarButton: () => null,
+                    tabBarItemStyle: { display: 'none' },
                 }}
             />
             <Tabs.Screen
@@ -78,6 +80,7 @@ export default function TabLayout() {
                         <TabBarIcon name={focused ? 'settings' : 'settings-outline'} color={color} />
                     ),
                     tabBarButton: () => null,
+                    tabBarItemStyle: { display: 'none' },
                 }}
             />
         </Tabs>
