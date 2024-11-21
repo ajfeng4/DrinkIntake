@@ -1,233 +1,42 @@
-import React, { useState, useRef } from 'react';
-import { StyleSheet, View, ScrollView, SafeAreaView, TouchableOpacity, Modal, Dimensions, TouchableWithoutFeedback, PanResponder } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { StyleSheet, View, ScrollView, SafeAreaView, TouchableOpacity, Modal, Dimensions, TouchableWithoutFeedback, PanResponder, Text, useColorScheme } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LineChart } from 'react-native-chart-kit';
 import DrinkIntakeHeader from '@/components/DrinkIntakeHeader';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types'; // Adjust the import path as needed
 import CircularProgress from 'react-native-circular-progress-indicator';
+import { supabase } from '@/supabaseClient';
+import { CartesianChart, Bar, useChartPressState } from "victory-native";
+import { Circle, useFont, vec } from "@shopify/react-native-skia";
+import { LinearGradient, Text as SKText } from "@shopify/react-native-skia";
+import { useDerivedValue } from "react-native-reanimated";
 
 type StatisticsScreenProps = {
-  navigation: StackNavigationProp<RootStackParamList, 'statistics'>;
+  navigation: StackNavigationProp<RootStackParamList, 'WaterIntakeStatistics'>;
 };
 
-// Add these types at the top of the file
-type BarData = {
-  label: string;
-  value: number;
-  goal?: number;
-  hour?: string;
-};
+const inter = require("../../assets/fonts/roboto-bold.ttf");
 
-// Add this type definition
-type TimeRange = 'D' | 'W' | 'M' | '6M' | 'Y';
 
-// Add this comprehensive dummy data
-const waterIntakeData = {
-  D: {
-    data: [
-      { label: '12 AM', value: 0 },
-      { label: '1 AM', value: 0 },
-      { label: '2 AM', value: 0 },
-      { label: '3 AM', value: 0 },
-      { label: '4 AM', value: 0 },
-      { label: '5 AM', value: 0 },
-      { label: '6 AM', value: 50 },
-      { label: '7 AM', value: 150 },
-      { label: '8 AM', value: 300 },
-      { label: '9 AM', value: 200 },
-      { label: '10 AM', value: 50 },
-      { label: '11 AM', value: 0 },
-      { label: '12 PM', value: 180 },
-      { label: '1 PM', value: 250 },
-      { label: '2 PM', value: 80 },
-      { label: '3 PM', value: 50 },
-      { label: '4 PM', value: 0 },
-      { label: '5 PM', value: 0 },
-      { label: '6 PM', value: 310 },
-      { label: '7 PM', value: 120 },
-      { label: '8 PM', value: 60 },
-      { label: '9 PM', value: 0 },
-      { label: '10 PM', value: 0 },
-      { label: '11 PM', value: 0 },
-    ],
-    maxValue: 400,
-    xAxisLabels: ['12 AM', '6', '12 PM', '6', '11'],
-  },
-  W: {
-    data: [
-      { label: 'Mon', value: 1500 },
-      { label: 'Tue', value: 1800 },
-      { label: 'Wed', value: 2100 },
-      { label: 'Thu', value: 1600 },
-      { label: 'Fri', value: 1900 },
-      { label: 'Sat', value: 1200 },
-      { label: 'Sun', value: 1400 },
-    ],
-    maxValue: 2500,
-    xAxisLabels: ['Mon', 'Wed', 'Fri', 'Sun'],
-  },
-  M: {
-    data: Array.from({ length: 30 }, (_, i) => ({
-      label: `Oct ${i + 1}`,
-      value: Math.floor(Math.random() * 2000) + 500,
-    })),
-    maxValue: 2500,
-    xAxisLabels: ['1', '10', '20', '30'],
-  },
-  '6M': {
-    data: Array.from({ length: 26 }, (_, i) => {
-      const months = ['June', 'July', 'August', 'September', 'October', 'November'];
-      const month = months[Math.floor(i/4)];
-      const startDay = (i%4) * 7 + 1;
-      const endDay = (i%4) * 7 + 7;
-      return {
-        label: `${month} ${startDay}-${endDay}`,
-        value: Math.floor(Math.random() * 15000) + 5000,
-      };
-    }),
-    maxValue: 20000,
-    xAxisLabels: ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'],
-  },
-  Y: {
-    data: Array.from({ length: 12 }, (_, i) => ({
-      label: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i],
-      value: Math.floor(Math.random() * 50000) + 20000,
-    })),
-    maxValue: 70000,
-    xAxisLabels: ['Jan', 'Mar', 'Jun', 'Sep', 'Dec'],
-  },
-};
+const processHistogramData = (data) => {
+  // Create an array of 24 zeros initially
+  const hourlyData = Array(24).fill(0);
 
-interface WaterIntakeGraphProps {
-  timeRange: TimeRange;
-  onBarPress?: (index: number) => void;
-  selectedBar?: number | null;
-}
-
-const WaterIntakeGraph: React.FC<WaterIntakeGraphProps> = ({
-  timeRange,
-  onBarPress,
-  selectedBar,
-}) => {
-  const data = waterIntakeData[timeRange];
-  const barWidth = timeRange === 'D' ? 8 : 
-                   timeRange === 'W' ? 20 :
-                   timeRange === 'M' ? 8 :
-                   timeRange === '6M' ? 8 : 16;
-  const barSpacing = timeRange === 'D' ? 4 : 
-                     timeRange === 'W' ? 8 :
-                     timeRange === 'M' ? 4 :
-                     timeRange === '6M' ? 4 : 6;
-
-  // Add this function to handle outside touches
-  const handleOutsidePress = () => {
-    if (selectedBar !== null) {
-      onBarPress?.(null);
+  // Count occurrences for each hour
+  data.forEach((record) => {
+    if (record.created_at) { // Check if created_at exists
+      const hour = new Date(record.created_at).getHours();
+      console.log('Processing record:', record.created_at, 'Hour:', hour); // Debug log
+      if (hour >= 0 && hour < 24) {
+        hourlyData[hour]++;
+      }
     }
-  };
+  });
 
-  return (
-    <TouchableOpacity onPress={handleOutsidePress}>
-      <View style={styles.graphContainer}>
-        {/* Y-axis labels */}
-        <View style={styles.yAxisLabels}>
-          <ThemedText style={styles.axisLabel}>{data.maxValue}</ThemedText>
-          <ThemedText style={styles.axisLabel}>{Math.round(data.maxValue * 0.66)}</ThemedText>
-          <ThemedText style={styles.axisLabel}>{Math.round(data.maxValue * 0.33)}</ThemedText>
-          <ThemedText style={styles.axisLabel}>0</ThemedText>
-        </View>
-
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={[
-            styles.barsContainer,
-            { width: (barWidth + barSpacing) * data.data.length + 40 }
-          ]}
-        >
-          {/* Grid lines */}
-          <View style={styles.gridLines}>
-            <View style={styles.gridLine} />
-            <View style={styles.gridLine} />
-            <View style={styles.gridLine} />
-            <View style={styles.gridLine} />
-          </View>
-
-          {/* Bars */}
-          <View style={styles.barsWrapper}>
-            {data.data.map((item, index) => {
-              const barHeight = Math.max((item.value / data.maxValue) * 200, 1);
-              const isSelected = selectedBar === index;
-
-              return (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => onBarPress?.(index)}
-                  style={[
-                    styles.barTouch,
-                    { width: barWidth, marginHorizontal: barSpacing/2 }
-                  ]}
-                >
-                  <View style={[
-                    styles.bar,
-                    { 
-                      height: barHeight,
-                      backgroundColor: isSelected ? '#328DD8' : '#A1CEDC'
-                    }
-                  ]} />
-                </TouchableOpacity>
-              );
-            })}
-
-            {/* Tooltip and vertical indicator */}
-            {selectedBar !== null && (
-              <>
-                {/* Vertical indicator line */}
-                <View style={[
-                  styles.verticalIndicator,
-                  {
-                    left: selectedBar * (barWidth + barSpacing) + barWidth / 2,
-                    top: 0,
-                    height: '100%',
-                  }
-                ]} />
-
-                {/* Tooltip */}
-                <View style={[
-                  styles.tooltipContainer,
-                  {
-                    left: selectedBar * (barWidth + barSpacing) - 50,
-                    top: -20,
-                  }
-                ]}>
-                  <View style={styles.tooltip}>
-                    <ThemedText style={styles.tooltipValue}>
-                      {data.data[selectedBar].value}ml
-                    </ThemedText>
-                    <ThemedText style={styles.tooltipTime}>
-                      {data.data[selectedBar].label}
-                    </ThemedText>
-                  </View>
-                </View>
-              </>
-            )}
-          </View>
-
-          {/* X-axis labels */}
-          <View style={styles.xAxisLabels}>
-            {data.xAxisLabels.map((label, index) => (
-              <ThemedText key={index} style={styles.xAxisLabel}>
-                {label}
-              </ThemedText>
-            ))}
-          </View>
-        </ScrollView>
-      </View>
-    </TouchableOpacity>
-  );
+  console.log('Final hourly data:', hourlyData); // Debug log
+  return hourlyData;
 };
 
 export default function StatisticsScreen({ navigation }: StatisticsScreenProps) {
@@ -238,16 +47,80 @@ export default function StatisticsScreen({ navigation }: StatisticsScreenProps) 
   const dropdownRef = useRef(null);
 
   // Daily goal stats
-  const dailyGoal = 2000;
-  const currentIntake = 1200;
+  const dailyGoal = 4;
+  const [currentIntake, setCurrentIntake] = useState(0);
 
-  const toggleDropdown = () => {
-    if (!isDropdownOpen) {
-      dropdownRef.current.measure((fx, fy, width, height, px, py) => {
-        setDropdownLayout({ x: px, y: py + height, width, height });
+  const [timeSpan, setTimeSpan] = useState('day'); // 'day', 'week', 'month', 'year'
+  const [graphData, setGraphData] = useState<number[]>([]);
+
+  // Add this state to store daily completions
+  const [weeklyCompletions, setWeeklyCompletions] = useState(Array(7).fill(false));
+
+  useEffect(() => {
+    fetchTodaySwallowingCount();
+  }, []);
+  
+  // Add this useEffect to fetch and check daily completions
+  useEffect(() => {
+    const fetchWeeklyCompletions = async () => {
+      const today = new Date();
+      const startOfWeek = new Date(today);
+      startOfWeek.setDate(today.getDate() - today.getDay());
+
+      const { data, error } = await supabase
+        .from('recordings')
+        .select('created_at, prediction_class')
+        .eq('prediction_class', 'Swallowing')
+        .gte('created_at', startOfWeek.toISOString())
+        .lt('created_at', new Date().toISOString());
+
+      if (error) {
+        console.error('Error fetching weekly data:', error);
+        return;
+      }
+
+      // Group swallows by day and check against daily goal
+      const completions = Array(7).fill(false);
+      data.forEach(record => {
+        const day = new Date(record.created_at).getDay();
+        const dayCount = data.filter(r => 
+          new Date(r.created_at).getDay() === day
+        ).length;
+        completions[day] = dayCount >= dailyGoal;
       });
+
+      setWeeklyCompletions(completions);
+    };
+
+    fetchWeeklyCompletions();
+  }, [dailyGoal]);
+
+  const fetchTodaySwallowingCount = async () => {
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const { data, error } = await supabase
+        .from('recordings')
+        .select('prediction_class')
+        .eq('prediction_class', 'Swallowing')
+        .gte('created_at', today.toISOString())
+        .lt('created_at', new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString());
+        
+      console.log('Raw Supabase data:', data)
+
+      if (error) {
+        console.error('Error fetching swallowing count:', error);
+        return;
+      }
+
+      // Count the number of Swallowing predictions
+      const swallowingCount = data.length;
+      console.log('Swallowing count:', swallowingCount);
+      setCurrentIntake(swallowingCount);
+    } catch (error) {
+      console.error('Error in fetchTodaySwallowingCount:', error);
     }
-    setIsDropdownOpen(!isDropdownOpen);
   };
 
   const selectOption = (option: string) => {
@@ -265,40 +138,185 @@ export default function StatisticsScreen({ navigation }: StatisticsScreenProps) 
     { day: 'Sat', completed: false },
     { day: 'Sun', completed: false },
   ];
+  
+  useEffect(() => {
+    console.log('graphData updated:', graphData);
+  }, [graphData]);
 
-  const [selectedBarIndex, setSelectedBarIndex] = useState<number | null>(null);
+  useEffect(() => {
+    fetchData();
+  }, [timeSpan]);
 
-  // Sample data for the bar graph
-  const barData: BarData[] = [
-    { label: 'Mon', value: 1200, goal: 2000 },
-    { label: 'Tue', value: 1800, goal: 2000 },
-    { label: 'Wed', value: 2100, goal: 2000 },
-    { label: 'Thu', value: 1600, goal: 2000 },
-    { label: 'Fri', value: 1900, goal: 2000 },
-    { label: 'Sat', value: 1500, goal: 2000 },
-    { label: 'Sun', value: 1700, goal: 2000 },
-  ];
+  const fetchData = async () => {
+    try {
+      const today = new Date();
+      let startDate = new Date();
+      
+      switch (timeSpan) {
+        case 'day':
+        startDate.setHours(0, 0, 0, 0);
+        break;
+      case 'week':
+        startDate.setDate(today.getDate() - today.getDay());
+        break;
+      case 'month':
+        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        break;
+      case 'year':
+        startDate = new Date(today.getFullYear(), 0, 1);
+        break;
+      }
+  
+      const { data, error } = await supabase
+        .from('recordings')
+        .select('created_at')
+        .eq('prediction_class', 'Swallowing')
+        .gte('created_at', startDate.toISOString())
+        .lt('created_at', new Date().toISOString());
+  
+      if (error) throw error;
+      
+      const processedData = processHistogramData(data || [], timeSpan);
+      setGraphData(processedData || []);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setGraphData([]);
+    }
+  };
+  
+  const processHistogramData = (data, timeSpan) => {
+    switch (timeSpan) {
+      case 'day':
+        // Create an array of 24 zeros for hours
+        const hourlyData = Array(24).fill(0);
+        data.forEach((record) => {
+          const date = new Date(record.created_at);
+          const hour = date.getHours();
+          hourlyData[hour]++;
+        });
+        return hourlyData;
+  
+      case 'week':
+        // Create an array of 7 zeros for days of week
+        const weeklyData = Array(7).fill(0);
+        data.forEach((record) => {
+          const date = new Date(record.created_at);
+          const dayOfWeek = date.getDay(); // 0 = Sunday, 6 = Saturday
+          weeklyData[dayOfWeek]++;
+        });
+        return weeklyData;
+  
+      case 'month':
+        // Create an array of 12 zeros for months
+        const monthlyData = Array(12).fill(0);
+        data.forEach((record) => {
+          const date = new Date(record.created_at);
+          const month = date.getMonth(); // 0 = January, 11 = December
+          monthlyData[month]++;
+        });
+        return monthlyData;
+    }
+  };
+  
+  // Update the format label function to handle different time spans
+const formatAxisLabel = (value: number, timeSpan: string) => {
+  switch (timeSpan) {
+    case 'day':
+      // Format hours (0-23)
+      const hour = value;
+      if (hour === 0) return '12am';
+      if (hour === 12) return '12pm';
+      return hour < 12 ? `${hour}am` : `${hour - 12}pm`;
 
-  const maxValue = Math.max(...barData.map(item => Math.max(item.value, item.goal || 0)));
+    case 'week':
+      // Format days of week
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      return days[value];
 
-  // Sample data for the hourly graph
-  const hourlyData: BarData[] = [
-    { label: '12 AM', hour: '12 AM', value: 0 },
-    { label: '6', hour: '6', value: 2 },
-    { label: '7', hour: '7', value: 3 },
-    { label: '8', hour: '8', value: 31 },
-    { label: '9', hour: '9', value: 20 },
-    { label: '10', hour: '10', value: 4 },
-    { label: '12 PM', hour: '12 PM', value: 18 },
-    { label: '1', hour: '1', value: 25 },
-    { label: '2', hour: '2', value: 8 },
-    { label: '3', hour: '3', value: 5 },
-    { label: '6', hour: '6', value: 31 },
-    { label: '7', hour: '7', value: 12 },
-    { label: '8', hour: '8', value: 6 },
-  ];
+    case 'month':
+      // Format months
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return months[value];
 
-  const [timeRange, setTimeRange] = useState<TimeRange>('D');
+    default:
+      return value.toString();
+    }
+  };
+
+  const font = useFont(inter, 12);
+  const toolTipFont = useFont(inter, 24);
+  const colorMode = useColorScheme();
+  const { state, isActive } = useChartPressState({
+    x: 0,
+    y: { intake: 0 },
+  });
+  
+  // Debug logs for state
+  console.log("Chart Press State:", {
+    isActive,
+    x: state.x,
+    y: state.y,
+    raw: state
+  });
+
+  const isDark = colorMode === "dark";
+  console.log("Original graphData:", graphData);
+  
+  // Add default data if graphData is empty
+  const defaultData = Array(24).fill(0);
+  const safeData = graphData?.length ? graphData : defaultData;
+  
+  // Debug log to check the transformed data
+  const transformedData = safeData.map((value, index) => ({
+    hour: index,
+    intake: Math.max(0, Number(value) || 0),
+  }));
+  console.log("Transformed Data:", transformedData);
+
+  const value = useDerivedValue(() => {
+    const rawValue = state.y.intake?.value?.value;
+    const index = state.x.value?.value;
+    
+    console.log("Touch interaction:", {
+      rawValue,
+      index,
+      data: transformedData?.[Math.round(index)]
+    });
+
+    // Get the actual data point value
+    const dataPoint = transformedData?.[Math.round(index)];
+    const intakeValue = dataPoint?.intake ?? 0;
+
+    return `${intakeValue} ml`;
+  }, [state, transformedData]);
+
+  const textYPosition = useDerivedValue(() => {
+    console.log("Y Position Derivation:", {
+      intakePosition: state.y.intake?.position?.value,
+    });
+    return state.y.intake.position.value - 15;
+  }, [value]);
+
+  const textXPosition = useDerivedValue(() => {
+    console.log("X Position Derivation:", {
+      xPosition: state.x?.position?.value,
+      tooltipWidth: toolTipFont?.measureText(value.value)?.width,
+    });
+    if (!toolTipFont) {
+      return 0;
+    }
+    return (
+      state.x.position.value - toolTipFont.measureText(value.value).width / 2
+    );
+  }, [value, toolTipFont]);
+
+  // Calculate safe maximum value
+  const maxValue = Math.max(...safeData.map(value => Number(value) || 0));
+  const yAxisMax = Math.ceil(maxValue * 1.2);
+
+  if (!font) {
+    return null; // Wait for font to load
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -343,89 +361,183 @@ export default function StatisticsScreen({ navigation }: StatisticsScreenProps) 
           <View style={styles.weeklyTrackerContainer}>
             <ThemedText style={styles.weeklyTitle}>Water required per day</ThemedText>
             <View style={styles.weeklyDays}>
-              {weeklyData.map((item, index) => (
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
                 <View key={index} style={styles.dayContainer}>
-                  <View style={[styles.dayIndicator, item.completed && styles.dayCompleted]}>
-                    {item.completed && (
+                  <View style={[styles.dayIndicator, weeklyCompletions[index] && styles.dayCompleted]}>
+                    {weeklyCompletions[index] && (
                       <TabBarIcon name="checkmark" color="#FFF" size={16} />
                     )}
                   </View>
-                  <ThemedText style={styles.dayText}>{item.day}</ThemedText>
+                  <ThemedText style={styles.dayText}>{day}</ThemedText>
                 </View>
               ))}
             </View>
           </View>
         </View>
 
-        {/* <View style={styles.intakeSection}>
-          <ThemedText style={styles.intakeTitle}>Current Intake</ThemedText>
-          <View style={styles.dropdownContainer}>
-            <TouchableOpacity onPress={toggleDropdown} style={styles.dropdown} ref={dropdownRef}>
-              <ThemedText style={styles.dropdownText}>{selectedView}</ThemedText>
-              <TabBarIcon name="chevron-down-outline" size={16} color="#A1CEDC" />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-
-        <View style={styles.detailsButton}>
-          <ThemedText style={styles.detailsButtonText}>Details</ThemedText>
-        </View> */}
-
-        {/* Time range selector */}
         <View style={styles.timeRangeSelector}>
-          {(['D', 'W', 'M', '6M', 'Y'] as TimeRange[]).map((range) => (
+          {['day', 'week', 'month'].map((span) => (
             <TouchableOpacity
-              key={range}
-              onPress={() => setTimeRange(range)}
-              style={[
-                styles.timeRangeButton,
-                timeRange === range && styles.timeRangeButtonActive
-              ]}
+              key={span}
+              style={[styles.timeRangeButton, timeSpan === span && styles.timeRangeButtonActive]}
+              onPress={() => setTimeSpan(span)}
             >
-              <ThemedText style={[
-                styles.timeRangeText,
-                timeRange === range && styles.timeRangeTextActive
-              ]}>
-                {range}
-              </ThemedText>
+              <Text style={[styles.timeRangeText, timeSpan === span && styles.timeRangeTextActive]}>
+                {span.charAt(0).toUpperCase() + span.slice(1)}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
 
-          <WaterIntakeGraph
-            timeRange={timeRange}
-            onBarPress={setSelectedBarIndex}
-          selectedBar={selectedBarIndex}
-        />
-      </ScrollView>
+        <View style={styles.graphSection}>
+          <ThemedText style={styles.graphTitle}>Drinking Pattern</ThemedText>
+          <View style={styles.chartContainer}>
+            <CartesianChart
+              data={transformedData}
+              xKey="hour"
+              yKeys={["intake"]}
+              domain={{ 
+                x: timeSpan === 'day' ? 
+                  [-3, safeData.length+1] : // More space for day view
+                  [-1, safeData.length],  // Less space for week/month
+                y: [0, yAxisMax],
+              }}
+              axisOptions={{
+                font,
+                formatXLabel: (value) => {
+                  console.log('X-Axis Label Value:', value, 'TimeSpan:', timeSpan);
+                  if (timeSpan === 'month') {
+                    // Only show labels for specific values: 0, 3, 6, 9
+                    const exactValue = Number(value.toFixed(1)); // Handle floating point precision
+                    if (exactValue === 0) return 'Jan';
+                    if (exactValue === 2) return 'Mar';
+                    if (exactValue === 4) return 'May';
+                    if (exactValue === 6) return 'Jul';
+                    if (exactValue === 8) return 'Sep';
+                    if (exactValue === 10) return 'Nov';
+                    return '';
+                  }
+                  
+                  if (timeSpan === 'week') {
+                    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                    const index = Math.round(value);
+                    // Only show label if it's a valid index
+                    return index >= 0 && index < days.length ? days[index] : '';
+                  }
+                  
+                  let normalizedValue;
+                  switch(timeSpan) {
+                    case 'week':
+                      normalizedValue = Math.min(Math.max(Math.round(value), 0), 6);
+                      break;
+                    default:
+                      normalizedValue = Math.round(value);
+                  }
+                  return formatAxisLabel(normalizedValue, timeSpan);
+                },
+                formatYLabel: (value) => {
+                  console.log('Y-Axis Label Value:', value, 'TimeSpan:', timeSpan);
+                  return `${Math.round(value)} ml`;
+                },
+                lineColor: isDark ? "#71717a" : "#d4d4d8",
+                labelColor: isDark ? "white" : "black",
+                tickCount: { 
+                  x: timeSpan === 'week' ? 7 : // Exactly 7 ticks for week view
+                    timeSpan === 'month' ? 12 : 
+                    timeSpan === 'year' ? 12 : 6, 
+                  y: 5 
+                },
+              }}
+              dimensions={{
+                width: Dimensions.get('window').width - 40,
+                height: 250
+              }}
+              chartPressState={state}
+            >
+              {({ points, chartBounds }) => {
+                if (!points?.intake) return null;
+                return (
+                  <>
+                    <Bar
+                      points={points.intake}
+                      chartBounds={chartBounds}
+                      animate={{ type: "timing", duration: 1000 }}
+                      roundedCorners={{
+                        topLeft: 10,
+                        topRight: 10,
+                      }}
+                      barWidth={((chartBounds.right - chartBounds.left) / (safeData.length + 2)) * 0.6}
+                    >
+                      <LinearGradient
+                        start={vec(0, 0)}
+                        end={vec(0, 400)}
+                        colors={["#328DD8", "#328DD850"]}
+                      />
+                    </Bar>
 
-      <Modal
-        visible={isDropdownOpen}
-        transparent={true}
-        animationType="none"
-        onRequestClose={() => setIsDropdownOpen(false)}
-      >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={() => setIsDropdownOpen(false)}
-        >
-          <View style={[styles.dropdownMenu, {
-            position: 'absolute',
-            top: dropdownLayout.y,
-            left: dropdownLayout.x,
-            width: dropdownLayout.width,
-          }]}>
-            <TouchableOpacity onPress={() => selectOption('Day')}>
-              <ThemedText style={styles.dropdownMenuItem}>Day</ThemedText>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => selectOption('Hourly')}>
-              <ThemedText style={styles.dropdownMenuItem}>Hourly</ThemedText>
-            </TouchableOpacity>
+                    {(() => {
+                      console.log('Checking tooltip state:', { isActive, state });
+                      return isActive ? (
+                        <>
+                          {console.log('Tooltip is active:', { 
+                            value: value.value,
+                            position: {
+                              x: textXPosition.value,
+                              y: textYPosition.value
+                            },
+                            state 
+                          })}
+                          <SKText
+                            font={toolTipFont}
+                            color={isDark ? "white" : "black"}
+                            x={textXPosition}
+                            y={textYPosition}
+                            text={value}
+                          />
+                          <Circle
+                            cx={state.x.position}
+                            cy={state.y.intake.position}
+                            r={8}
+                            color={"#328DD8"}
+                            opacity={0.8}
+                          />
+                        </>
+                      ) : null;
+                    })()}
+                  </>
+                );
+              }}
+            </CartesianChart>
           </View>
-        </TouchableOpacity>
-      </Modal>
+        </View>
+
+        <Modal
+          visible={isDropdownOpen}
+          transparent={true}
+          animationType="none"
+          onRequestClose={() => setIsDropdownOpen(false)}
+        >
+          <TouchableOpacity
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => setIsDropdownOpen(false)}
+          >
+            <View style={[styles.dropdownMenu, {
+              position: 'absolute',
+              top: dropdownLayout.y,
+              left: dropdownLayout.x,
+              width: dropdownLayout.width,
+            }]}>
+              <TouchableOpacity onPress={() => selectOption('Day')}>
+                <ThemedText style={styles.dropdownMenuItem}>Day</ThemedText>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => selectOption('Hourly')}>
+                <ThemedText style={styles.dropdownMenuItem}>Hourly</ThemedText>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </Modal>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -532,10 +644,6 @@ const styles = StyleSheet.create({
     padding: 10,
     color: '#328DD8',
   },
-  chartContainer: {
-    marginTop: 20,
-    marginBottom: 20,
-  },
   chartRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -592,59 +700,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#328DD8',
   },
-  tooltipContainer: {
-    position: 'absolute',
-    alignItems: 'center',
-    zIndex: 1000,
-  },
-  tooltip: {
-    position: 'absolute',
-    backgroundColor: 'white',
-    padding: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#328DD8',
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    zIndex: 1000,
-  },
-  tooltipText: {
-    color: '#328DD8',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  tooltipArrow: {
-    width: 0,
-    height: 0,
-    backgroundColor: 'transparent',
-    borderStyle: 'solid',
-    borderLeftWidth: 8,
-    borderRightWidth: 8,
-    borderBottomWidth: 8,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderTopColor: 'transparent',
-    borderBottomColor: '#FFFFFF',
-  },
   graphSection: {
-    marginBottom: 100,
+    marginBottom: 20,
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+  },
+  chartContainer: {
+    height: 300,
+    paddingTop: 10,
+    paddingHorizontal: -40,
+    flex: 1,
   },
   graphTitle: {
     fontSize: 18,
@@ -735,258 +800,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6C757D',
   },
-  graphWrapper: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 10,
-    marginVertical: 10,
-    overflow: 'hidden',
-  },
-  verticalLine: {
-    position: 'absolute',
-    width: 1,
-    backgroundColor: 'rgba(50, 141, 216, 0.5)',
-  },
-  activePoint: {
-    position: 'absolute',
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#328DD8',
-    borderWidth: 2,
-    borderColor: '#FFF',
-  },
-  tooltipContainer: {
-    position: 'absolute',
-    alignItems: 'center',
-    zIndex: 1000,
-  },
-  tooltip: {
-    backgroundColor: 'white',
-    padding: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#328DD8',
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  tooltipValue: {
-    color: '#328DD8',
-    fontSize: 14,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  tooltipLabel: {
-    color: '#6C757D',
-    fontSize: 12,
-    marginTop: 2,
-    textAlign: 'center',
-  },
-  draggableDot: {
-    position: 'absolute',
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#328DD8',
-    borderWidth: 2,
-    borderColor: '#FFF',
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  dotIndicator: {
-    position: 'absolute',
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'transparent',
-    borderWidth: 1.5,
-    borderColor: '#328DD8',
-    shadowColor: "transparent",
-    shadowOffset: {
-      width: 0,
-      height: 0,
-    },
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  miniTooltip: {
-    position: 'absolute',
-    padding: 4,
-    borderRadius: 4,
-    width: 60,
-    alignItems: 'center',
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#328DD8',
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  miniTooltipText: {
-    color: '#328DD8',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  barGraphContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 20,
-    alignItems: 'flex-end',
-    minHeight: 250,
-  },
-  barColumn: {
-    alignItems: 'center',
-    marginHorizontal: 6,
-  },
-  bar: {
-    width: '100%',
-    borderRadius: 2, // Smaller border radius for thinner bars
-    backgroundColor: '#328DD8',
-  },
-  goalLine: {
-    position: 'absolute',
-    width: 44,
-    height: 2,
-    backgroundColor: '#328DD8',
-    borderRadius: 1,
-  },
-  valueLabel: {
-    position: 'absolute',
-    top: -25,
-    backgroundColor: '#328DD8',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  valueLabelText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  barLabel: {
-    fontSize: 12,
-    color: '#6C757D',
-    marginTop: 4,
-  },
-  selectedBarLabel: {
-    color: '#328DD8',
-    fontWeight: '600',
-  },
-  graphContainer: {
-    height: 280,
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    marginBottom: 80,
-  },
-  yAxisLabels: {
-    width: 40,
-    justifyContent: 'space-between',
-    paddingVertical: 20,
-    marginRight: 5,
-    marginLeft: -30,
-    position: 'relative',
-  },
-  axisLabel: {
-    fontSize: 12,
-    color: '#8E8E93',
-    textAlign: 'right',
-  },
-  barsContainer: {
-    flexGrow: 1,
-    paddingVertical: 20,
-  },
-  gridLines: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 20,
-    justifyContent: 'space-between',
-  },
-  gridLine: {
-    height: 1,
-    backgroundColor: '#E5E5EA',
-  },
-  barsWrapper: {
-    flexDirection: 'row',
-    marginLeft: 40,
-    // alignItems: 'flex-end',
-    // height: 200,
-  },
-  barTouch: {
-    alignItems: 'center',
-    height: '100%',
-    justifyContent: 'flex-end',
-  },
-  tooltip: {
-    position: 'absolute',
-    zIndex: 1000,
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 8,
-    padding: 8,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  tooltipValue: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-    textAlign: 'center',
-  },
-  tooltipTime: {
-    fontSize: 12,
-    color: '#8E8E93',
-    textAlign: 'center',
-    marginTop: 2,
-  },
-  tooltipArrow: {
-    width: 0,
-    height: 0,
-    backgroundColor: 'transparent',
-    borderStyle: 'solid',
-    borderLeftWidth: 8,
-    borderRightWidth: 8,
-    borderTopWidth: 8,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderTopColor: 'white',
-  },
-  xAxisLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-  },
-  xAxisLabel: {
-    fontSize: 12,
-    color: '#8E8E93',
-  },
   timeRangeSelector: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -1020,37 +833,53 @@ const styles = StyleSheet.create({
     color: '#000000',
     fontWeight: '600',
   },
-  verticalIndicator: {
+  chartScrollContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  tooltip: {
     position: 'absolute',
-    width: 1,
-    backgroundColor: '#8E8E93',
-    opacity: 0.5,
-    zIndex: 10,
+    top: -30,
+    backgroundColor: 'rgba(50, 141, 216, 0.9)',
+    padding: 8,
+    borderRadius: 6,
+    zIndex: 1,
+  },
+  tooltipText: {
+    color: 'white',
+    fontSize: 12,
   },
   tooltipContainer: {
     position: 'absolute',
+    top: 20,
     alignItems: 'center',
-    width: 100,
-    zIndex: 1000,
+    zIndex: 1,
   },
-  tooltip: {
-    backgroundColor: '#F2F2F7',
-    padding: 8,
-    borderRadius: 8,
-    alignItems: 'center',
-    width: '100%',
+  tooltipContent: {
+    backgroundColor: '#2C3E50',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    minWidth: 60,
   },
   tooltipValue: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#000000',
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 'bold',
     textAlign: 'center',
   },
-  tooltipTime: {
-    fontSize: 12,
-    color: '#8E8E93',
-    textAlign: 'center',
-    marginTop: 4,
+  tooltipArrow: {
+    width: 0,
+    height: 0,
+    backgroundColor: 'transparent',
+    borderStyle: 'solid',
+    borderLeftWidth: 8,
+    borderRightWidth: 8,
+    borderTopWidth: 8,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderTopColor: '#2C3E50',
+    marginTop: -1,
   },
 });
 export default StatisticsScreen;
