@@ -5,7 +5,7 @@ import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DrinkIntakeHeader from '@/components/DrinkIntakeHeader';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../types'; // Adjust the import path as needed
+import { RootStackParamList } from '../../types/types'; // Adjust the import path as needed
 import CircularProgress from 'react-native-circular-progress-indicator';
 import { supabase } from '@/supabaseClient';
 import { CartesianChart, Bar, useChartPressState } from "victory-native";
