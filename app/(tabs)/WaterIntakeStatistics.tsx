@@ -47,16 +47,53 @@ export default function StatisticsScreen({ navigation }: StatisticsScreenProps) 
   const dropdownRef = useRef(null);
 
   // Daily goal stats
-  const dailyGoal = 2000;
+  const dailyGoal = 4;
   const [currentIntake, setCurrentIntake] = useState(0);
 
   const [timeSpan, setTimeSpan] = useState('day'); // 'day', 'week', 'month', 'year'
   const [graphData, setGraphData] = useState<number[]>([]);
 
+  // Add this state to store daily completions
+  const [weeklyCompletions, setWeeklyCompletions] = useState(Array(7).fill(false));
 
   useEffect(() => {
     fetchTodaySwallowingCount();
   }, []);
+  
+  // Add this useEffect to fetch and check daily completions
+  useEffect(() => {
+    const fetchWeeklyCompletions = async () => {
+      const today = new Date();
+      const startOfWeek = new Date(today);
+      startOfWeek.setDate(today.getDate() - today.getDay());
+
+      const { data, error } = await supabase
+        .from('recordings')
+        .select('created_at, prediction_class')
+        .eq('prediction_class', 'Swallowing')
+        .gte('created_at', startOfWeek.toISOString())
+        .lt('created_at', new Date().toISOString());
+
+      if (error) {
+        console.error('Error fetching weekly data:', error);
+        return;
+      }
+
+      // Group swallows by day and check against daily goal
+      const completions = Array(7).fill(false);
+      data.forEach(record => {
+        const day = new Date(record.created_at).getDay();
+        const dayCount = data.filter(r => 
+          new Date(r.created_at).getDay() === day
+        ).length;
+        completions[day] = dayCount >= dailyGoal;
+      });
+
+      setWeeklyCompletions(completions);
+    };
+
+    fetchWeeklyCompletions();
+  }, [dailyGoal]);
 
   const fetchTodaySwallowingCount = async () => {
     try {
@@ -324,14 +361,14 @@ const formatAxisLabel = (value: number, timeSpan: string) => {
           <View style={styles.weeklyTrackerContainer}>
             <ThemedText style={styles.weeklyTitle}>Water required per day</ThemedText>
             <View style={styles.weeklyDays}>
-              {weeklyData.map((item, index) => (
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
                 <View key={index} style={styles.dayContainer}>
-                  <View style={[styles.dayIndicator, item.completed && styles.dayCompleted]}>
-                    {item.completed && (
+                  <View style={[styles.dayIndicator, weeklyCompletions[index] && styles.dayCompleted]}>
+                    {weeklyCompletions[index] && (
                       <TabBarIcon name="checkmark" color="#FFF" size={16} />
                     )}
                   </View>
-                  <ThemedText style={styles.dayText}>{item.day}</ThemedText>
+                  <ThemedText style={styles.dayText}>{day}</ThemedText>
                 </View>
               ))}
             </View>
@@ -429,7 +466,7 @@ const formatAxisLabel = (value: number, timeSpan: string) => {
                         topLeft: 10,
                         topRight: 10,
                       }}
-                      barWidth={(chartBounds.right - chartBounds.left) / (safeData.length + 2)}
+                      barWidth={((chartBounds.right - chartBounds.left) / (safeData.length + 2)) * 0.6}
                     >
                       <LinearGradient
                         start={vec(0, 0)}
