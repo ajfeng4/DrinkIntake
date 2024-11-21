@@ -312,7 +312,8 @@ const formatAxisLabel = (value: number, timeSpan: string) => {
 
   // Calculate safe maximum value
   const maxValue = Math.max(...safeData.map(value => Number(value) || 0));
-  const yAxisMax = Math.ceil(maxValue * 1.2);
+
+  const yAxisMax = maxValue === 0 ? 4 : Math.ceil(maxValue * 1.2);
 
   if (!font) {
     return null; // Wait for font to load
@@ -437,7 +438,9 @@ const formatAxisLabel = (value: number, timeSpan: string) => {
                 },
                 formatYLabel: (value) => {
                   console.log('Y-Axis Label Value:', value, 'TimeSpan:', timeSpan);
-                  return `${Math.round(value)} ml`;
+                  // Only show "0 ml" once at the bottom
+                  if (value === 0) return '0 ml';
+                  return `${value.toFixed(1)} ml`;
                 },
                 lineColor: isDark ? "#71717a" : "#d4d4d8",
                 labelColor: isDark ? "white" : "black",
@@ -445,7 +448,7 @@ const formatAxisLabel = (value: number, timeSpan: string) => {
                   x: timeSpan === 'week' ? 7 : // Exactly 7 ticks for week view
                     timeSpan === 'month' ? 12 : 
                     timeSpan === 'year' ? 12 : 6, 
-                  y: 5 
+                  y: 6
                 },
               }}
               dimensions={{
