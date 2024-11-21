@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Modal, TouchableOpacity, FlatList, Text, StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
+import { useRouter } from 'expo-router';
 
 type AlertItem = {
     date: string;
@@ -20,9 +21,14 @@ const alerts: AlertItem[] = [
 
 const DrinkIntakeHeader = () => {
     const [modalVisible, setModalVisible] = useState(false);
+    const router = useRouter();
 
     const toggleModal = () => {
         setModalVisible(!modalVisible);
+    };
+
+    const openSettings = () => {
+        router.push('/Settings');
     };
 
     const renderAlert = ({ item }: { item: AlertItem }) => (
@@ -42,12 +48,16 @@ const DrinkIntakeHeader = () => {
                     <ThemedText style={styles.headerSubtitle}>Stay hydrated!</ThemedText>
                     <ThemedText style={styles.headerTitle}>Jane Doe</ThemedText>
                 </View>
-                <TouchableOpacity style={styles.notificationIcon} onPress={toggleModal}>
-                    <TabBarIcon name="notifications-outline" color="#333333" />
-                </TouchableOpacity>
+                <View style={styles.headerButtons}>
+                    <TouchableOpacity style={styles.settingsIcon} onPress={openSettings}>
+                        <TabBarIcon name="settings-outline" color="#333333" />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.notificationIcon} onPress={toggleModal}>
+                        <TabBarIcon name="notifications-outline" color="#333333" />
+                    </TouchableOpacity>
+                </View>
             </View>
 
-            {/* Modal for displaying alerts */}
             <Modal
                 animationType="slide"
                 transparent={true}
@@ -81,6 +91,15 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 20,
+    },
+    headerButtons: {
+        flexDirection: 'row',
+    },
+    settingsIcon: {
+        backgroundColor: '#F0F0F0',
+        borderRadius: 20,
+        padding: 10,
+        marginRight: 10,
     },
     headerSubtitle: {
         fontSize: 16,
