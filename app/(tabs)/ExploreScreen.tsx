@@ -29,7 +29,7 @@ export default function ExploreScreen() {
 
                 <TouchableOpacity
                     style={styles.button}
-                    onPress={() => router.push('/WaterIntakeStatistics')}
+                    onPress={() => router.push('/Goals')}
                 >
                     <Ionicons name="calendar-outline" size={40} color="#328DD8" />
                     <Text style={styles.buttonText}>Review Goals</Text>
