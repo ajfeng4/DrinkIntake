@@ -8,7 +8,6 @@ import {
     Switch,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Picker } from '@react-native-picker/picker';
 import DrinkIntakeHeader from '@/components/DrinkIntakeHeader';
 
 export default function Goals() {
@@ -19,23 +18,43 @@ export default function Goals() {
     const [showNotifications, setShowNotifications] = useState(true);
     const [sound, setSound] = useState('Default');
     const [selectedGoal, setSelectedGoal] = useState('Drink 50 ml a week');
+    const [isDropdownVisible, setIsDropdownVisible] = useState(false);
 
     return (
         <SafeAreaView style={styles.safeArea}>
             <View style={styles.container}>
                 <DrinkIntakeHeader />
 
-                <View style={styles.pickerContainer}>
-                    <Picker
-                        selectedValue={selectedGoal}
-                        style={styles.picker}
-                        onValueChange={(itemValue: string) => setSelectedGoal(itemValue)}
-                        itemStyle={{ color: '#328DD8' }}
-                    >
-                        <Picker.Item label="Drink 50 ml a week" value="Drink 50 ml a week" color="#328DD8" />
-                        <Picker.Item label="Drink 100 ml a day" value="Drink 100 ml a day" color="#328DD8" />
-                    </Picker>
-                </View>
+                <TouchableOpacity
+                    style={styles.option}
+                    onPress={() => setIsDropdownVisible(!isDropdownVisible)}
+                >
+                    <Text style={styles.optionText}>Select Goal</Text>
+                    <Text style={styles.optionValue}>{selectedGoal}</Text>
+                </TouchableOpacity>
+
+                {isDropdownVisible && (
+                    <View style={styles.dropdown}>
+                        <TouchableOpacity
+                            style={styles.dropdownOption}
+                            onPress={() => {
+                                setSelectedGoal('Drink 50 ml a week');
+                                setIsDropdownVisible(false);
+                            }}
+                        >
+                            <Text style={styles.dropdownOptionText}>Drink 50 ml a week</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.dropdownOption}
+                            onPress={() => {
+                                setSelectedGoal('Drink 100 ml a day');
+                                setIsDropdownVisible(false);
+                            }}
+                        >
+                            <Text style={styles.dropdownOptionText}>Drink 100 ml a day</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
 
                 <View style={styles.option}>
                     <Text style={styles.optionText}>Repeat goal</Text>
@@ -68,10 +87,16 @@ export default function Goals() {
                 </View>
 
                 <View style={styles.buttonContainer}>
-                    <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()}>
+                    <TouchableOpacity
+                        style={styles.cancelButton}
+                        onPress={() => router.back()}
+                    >
                         <Text style={styles.cancelButtonText}>Cancel</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.submitButton} onPress={() => console.log('Submitted')}>
+                    <TouchableOpacity
+                        style={styles.submitButton}
+                        onPress={() => console.log('Submitted')}
+                    >
                         <Text style={styles.submitButtonText}>Submit</Text>
                     </TouchableOpacity>
                 </View>
@@ -88,16 +113,6 @@ const styles = StyleSheet.create({
     container: {
         padding: 20,
         backgroundColor: '#fff',
-    },
-    pickerContainer: {
-        backgroundColor: 'rgba(240, 246, 255, 0.82)',
-        borderRadius: 5,
-        marginBottom: 20,
-    },
-    picker: {
-        height: 50,
-        width: '100%',
-        color: '#328DD8',
     },
     option: {
         flexDirection: 'row',
@@ -117,6 +132,20 @@ const styles = StyleSheet.create({
         color: '#328DD8',
         fontSize: 18,
         fontWeight: 'bold',
+    },
+    dropdown: {
+        backgroundColor: 'rgba(240, 246, 255, 0.82)',
+        borderRadius: 10,
+        marginBottom: 20,
+    },
+    dropdownOption: {
+        padding: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ddd',
+    },
+    dropdownOptionText: {
+        color: '#328DD8',
+        fontSize: 18,
     },
     buttonContainer: {
         flexDirection: 'row',
