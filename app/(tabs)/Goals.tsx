@@ -22,9 +22,9 @@ export default function Goals() {
 
     return (
         <SafeAreaView style={styles.safeArea}>
-            <DrinkIntakeHeader />
+            <View style={styles.container}>
+                <DrinkIntakeHeader />
 
-            <View style={styles.contentContainer}>
                 <View style={styles.pickerContainer}>
                     <Picker
                         selectedValue={selectedGoal}
@@ -85,8 +85,9 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: 'white',
     },
-    contentContainer: {
+    container: {
         padding: 20,
+        backgroundColor: '#fff',
     },
     pickerContainer: {
         backgroundColor: 'rgba(240, 246, 255, 0.82)',
