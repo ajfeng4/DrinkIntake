@@ -22,7 +22,7 @@ export default function Profile() {
                     <Text style={styles.profilePictureText}>🙂</Text>
                 </View>
 
-                <Text style={styles.userDetails}>Jane Doe</Text>
+                <Text style={styles.Name}>Jane Doe</Text>
                 <Text style={styles.userDetails}>Female</Text>
                 <Text style={styles.userDetails}>Rookie</Text>
                 <Text style={styles.userDetails}>40 years old</Text>
@@ -71,7 +71,8 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(240, 246, 255, 0.82)',
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 20,
+        marginTop: 30,
+        marginBottom: 10,
         alignSelf: 'center',
     },
     profilePictureText: {
@@ -79,15 +80,25 @@ const styles = StyleSheet.create({
         color: '#328DD8',
     },
     userDetails: {
-        fontSize: 18,
+        fontSize: 12,
         color: '#328DD8',
-        fontWeight: 'bold',
-        marginTop: 10,
+        fontWeight: 'semibold',
+        marginTop: 2,
+        alignSelf: 'center',
+    },
+    Name: {
+        fontSize: 26,
+        color: '#328DD8',
+        fontWeight: 'semibold',
+        marginTop: 2,
+        alignSelf: 'center',
     },
     achievementsText: {
         fontSize: 16,
         color: '#328DD8',
-        marginTop: 20,
+        marginTop: 100,
+        marginBottom: 100,
+        alignSelf: 'center',
     },
     editProfileButton: {
         backgroundColor: '#328DD8',
