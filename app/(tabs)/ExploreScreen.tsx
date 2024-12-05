@@ -53,7 +53,7 @@ export default function ExploreScreen() {
 
                 <TouchableOpacity
                     style={styles.button}
-                    onPress={() => router.push('/WaterIntakeStatistics')}
+                    onPress={() => router.push('/ScoreboardScreen')}
                 >
                     <Ionicons name="trophy-outline" size={40} color="#328DD8" />
                     <Text style={styles.buttonText}>Goal Scoreboard</Text>
