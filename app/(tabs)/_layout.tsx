@@ -94,6 +94,15 @@ export default function TabLayout() {
                     tabBarItemStyle: { display: 'none' },
                 }}
             />
+            <Tabs.Screen
+                name="ScoreboardScreen"
+                options={{
+                    title: 'Scoreboard',
+                    tabBarIcon: ({ color }) => <TabBarIcon name="trophy-outline" color={color} />,
+                    tabBarButton: () => null,
+                    tabBarItemStyle: { display: 'none' },
+                }}
+            />
         </Tabs>
     );
 }

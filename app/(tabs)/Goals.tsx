@@ -3,9 +3,10 @@ import {
     SafeAreaView,
     View,
     Text,
-    TouchableOpacity,
     StyleSheet,
     Switch,
+    TextInput,
+    TouchableOpacity,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import DrinkIntakeHeader from '@/components/DrinkIntakeHeader';
@@ -17,73 +18,59 @@ export default function Goals() {
     const [duration, setDuration] = useState(90);
     const [showNotifications, setShowNotifications] = useState(true);
     const [sound, setSound] = useState('Default');
-    const [selectedGoal, setSelectedGoal] = useState('Drink 50 ml a week');
-    const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+    const [customVolume, setCustomVolume] = useState('');
+    const [selectedGoal, setSelectedGoal] = useState('Set your daily goal');
+
+    const handleVolumeChange = (volume: string) => {
+        setCustomVolume(volume);
+        setSelectedGoal(`Drink ${volume} ml a day`);
+    };
 
     return (
         <SafeAreaView style={styles.safeArea}>
             <View style={styles.container}>
                 <DrinkIntakeHeader />
 
-                <TouchableOpacity
-                    style={styles.option}
-                    onPress={() => setIsDropdownVisible(!isDropdownVisible)}
-                >
-                    <Text style={styles.optionText}>Select Goal</Text>
-                    <Text style={styles.optionValue}>{selectedGoal}</Text>
-                </TouchableOpacity>
-
-                {isDropdownVisible && (
-                    <View style={styles.dropdown}>
-                        <TouchableOpacity
-                            style={styles.dropdownOption}
-                            onPress={() => {
-                                setSelectedGoal('Drink 50 ml a week');
-                                setIsDropdownVisible(false);
-                            }}
-                        >
-                            <Text style={styles.dropdownOptionText}>Drink 50 ml a week</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={styles.dropdownOption}
-                            onPress={() => {
-                                setSelectedGoal('Drink 100 ml a day');
-                                setIsDropdownVisible(false);
-                            }}
-                        >
-                            <Text style={styles.dropdownOptionText}>Drink 100 ml a day</Text>
-                        </TouchableOpacity>
+                <View style={styles.outerContainer}>
+                    <View style={styles.option}>
+                        <Text style={styles.goalLabel}>Set goal</Text>
+                        <View style={styles.inputGroup}>
+                            <Text style={styles.optionText}>Drink</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder=""
+                                keyboardType="numeric"
+                                value={customVolume}
+                                onChangeText={handleVolumeChange}
+                            />
+                            <Text style={styles.optionText}>ml a day</Text>
+                        </View>
                     </View>
-                )}
 
-                <View style={styles.option}>
-                    <Text style={styles.optionText}>Repeat goal</Text>
-                    <Text style={styles.optionValue}>{repeatGoal} time</Text>
-                </View>
+                    <View style={styles.option}>
+                        <Text style={styles.optionText}>Start at</Text>
+                        <Text style={styles.optionValue}>{startTime}</Text>
+                    </View>
 
-                <View style={styles.option}>
-                    <Text style={styles.optionText}>Start at</Text>
-                    <Text style={styles.optionValue}>{startTime}</Text>
-                </View>
+                    <View style={styles.option}>
+                        <Text style={styles.optionText}>Duration</Text>
+                        <Text style={styles.optionValue}>{duration} days</Text>
+                    </View>
 
-                <View style={styles.option}>
-                    <Text style={styles.optionText}>Duration</Text>
-                    <Text style={styles.optionValue}>{duration} days</Text>
-                </View>
+                    <View style={styles.option}>
+                        <Text style={styles.optionText}>Show notifications</Text>
+                        <Switch
+                            value={showNotifications}
+                            onValueChange={setShowNotifications}
+                            thumbColor={showNotifications ? '#328DD8' : '#f4f3f4'}
+                            trackColor={{ false: '#767577', true: '#81b0ff' }}
+                        />
+                    </View>
 
-                <View style={styles.option}>
-                    <Text style={styles.optionText}>Show notifications</Text>
-                    <Switch
-                        value={showNotifications}
-                        onValueChange={setShowNotifications}
-                        thumbColor={showNotifications ? '#328DD8' : '#f4f3f4'}
-                        trackColor={{ false: '#767577', true: '#81b0ff' }}
-                    />
-                </View>
-
-                <View style={styles.option}>
-                    <Text style={styles.optionText}>Sound</Text>
-                    <Text style={styles.optionValue}>{sound}</Text>
+                    <View style={styles.option}>
+                        <Text style={styles.optionText}>Sound</Text>
+                        <Text style={styles.optionValue}>{sound}</Text>
+                    </View>
                 </View>
 
                 <View style={styles.buttonContainer}>
@@ -114,6 +101,18 @@ const styles = StyleSheet.create({
         padding: 20,
         backgroundColor: '#fff',
     },
+    outerContainer: {
+        backgroundColor: '#f0f6ff',
+        borderRadius: 10,
+        padding: 15,
+        marginBottom: 50,
+        marginTop: 30,
+    },
+    goalLabel: {
+        fontSize: 18,
+        color: '#328DD8',
+        fontWeight: 'bold',
+    },
     option: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -133,19 +132,13 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
     },
-    dropdown: {
-        backgroundColor: 'rgba(240, 246, 255, 0.82)',
-        borderRadius: 10,
-        marginBottom: 20,
-    },
-    dropdownOption: {
-        padding: 15,
-        borderBottomWidth: 1,
-        borderBottomColor: '#ddd',
-    },
-    dropdownOptionText: {
-        color: '#328DD8',
-        fontSize: 18,
+    input: {
+        height: 30,
+        borderColor: '#ccc',
+        borderWidth: 1,
+        width: 40,
+        textAlign: 'center',
+        borderRadius: 5,
     },
     buttonContainer: {
         flexDirection: 'row',
@@ -176,5 +169,9 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 18,
         fontWeight: 'bold',
+    },
+    inputGroup: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
 });
