@@ -12,6 +12,8 @@ import { CartesianChart, Bar, useChartPressState } from "victory-native";
 import { Circle, useFont, vec } from "@shopify/react-native-skia";
 import { LinearGradient, Text as SKText } from "@shopify/react-native-skia";
 import { useDerivedValue } from "react-native-reanimated";
+import { useIsFocused } from '@react-navigation/native';
+import { User } from '@supabase/supabase-js';
 
 type StatisticsScreenProps = {
   navigation: StackNavigationProp<RootStackParamList, 'WaterIntakeStatistics'>;
@@ -44,10 +46,11 @@ export default function StatisticsScreen({ navigation }: StatisticsScreenProps) 
   const [selectedView, setSelectedView] = useState('Day');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [dropdownLayout, setDropdownLayout] = useState({ x: 0, y: 0, width: 0, height: 0 });
-  const dropdownRef = useRef(null);
+  const isFocused = useIsFocused();
 
   // Daily goal stats
-  const dailyGoal = 4;
+  const [dailyGoal, setDailyGoal] = useState(4);
+  const [user, setUser] = useState<User | null>(null);
   const [currentIntake, setCurrentIntake] = useState(0);
 
   const [timeSpan, setTimeSpan] = useState('day'); // 'day', 'week', 'month', 'year'
@@ -56,10 +59,6 @@ export default function StatisticsScreen({ navigation }: StatisticsScreenProps) 
   // Add this state to store daily completions
   const [weeklyCompletions, setWeeklyCompletions] = useState(Array(7).fill(false));
 
-  useEffect(() => {
-    fetchTodaySwallowingCount();
-  }, []);
-  
   // Add this useEffect to fetch and check daily completions
   useEffect(() => {
     const fetchWeeklyCompletions = async () => {
@@ -95,7 +94,50 @@ export default function StatisticsScreen({ navigation }: StatisticsScreenProps) 
     fetchWeeklyCompletions();
   }, [dailyGoal]);
 
-  const fetchTodaySwallowingCount = async () => {
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+
+    if (isFocused) {
+      getCurrentUser();
+    }
+  }, [isFocused]);
+
+  useEffect(() => {
+    if (user) {
+      fetchTodaySwallowingCount(user.id);
+      fetchUserGoal(user.id);
+    }
+  },);
+  
+  // Add this function to fetch the user's goal
+  const fetchUserGoal = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('goals')
+        .select('volume')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (error) {
+        console.error('Error fetching goal:', error);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        const goalVolume = data[0].volume;
+        console.log('Current Goal Volume:', goalVolume); // Debugging line
+        setDailyGoal(goalVolume);
+      }
+    } catch (error) {
+      console.error('Error in fetchUserGoal:', error);
+    }
+  };
+
+  const fetchTodaySwallowingCount = async (userId) => {
     try {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -103,6 +145,7 @@ export default function StatisticsScreen({ navigation }: StatisticsScreenProps) 
       const { data, error } = await supabase
         .from('recordings')
         .select('prediction_class')
+        .eq('user_id', userId)
         .eq('prediction_class', 'Swallowing')
         .gte('created_at', today.toISOString())
         .lt('created_at', new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString());
@@ -127,17 +170,6 @@ export default function StatisticsScreen({ navigation }: StatisticsScreenProps) 
     setSelectedView(option);
     setIsDropdownOpen(false);
   };
-
-  // Add this after the existing imports
-  const weeklyData = [
-    { day: 'Mon', completed: true },
-    { day: 'Tue', completed: true },
-    { day: 'Wed', completed: true },
-    { day: 'Thu', completed: false },
-    { day: 'Fri', completed: true },
-    { day: 'Sat', completed: false },
-    { day: 'Sun', completed: false },
-  ];
   
   useEffect(() => {
     console.log('graphData updated:', graphData);
