@@ -99,21 +99,6 @@ export default function ExploreScreen() {
                     <Text style={styles.buttonText}>Voice Recordings</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity
-                    style={styles.button}
-                    onPress={() => router.push('/Profile')}
-                >
-                    <SimpleLineIcons name="user" size={40} color="#328DD8" />
-                    <Text style={styles.buttonText}>Profile</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    style={styles.button}
-                    onPress={() => router.push('DeviceHealth')}
-                >
-                    <SimpleLineIcons name="earphones" size={40} color="#328DD8" />
-                    <Text style={styles.buttonText}>Device Health</Text>
-                </TouchableOpacity>
             </ScrollView>
         </SafeAreaView>
     );

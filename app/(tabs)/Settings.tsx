@@ -56,6 +56,26 @@ const Settings = () => {
     const handleOptionPress = (title: string) => {
         if (title === 'Log Out') {
             setIsLogoutModalVisible(true);
+        } else {
+            switch (title) {
+                case 'User Profile':
+                    router.push('/Profile');
+                    break;
+                case 'Send Feedback':
+                    router.push('/Profile');
+                    break;
+                case 'Device Battery':
+                    router.push('/DeviceHealth');
+                    break;
+                case 'Device Statistics':
+                    router.push('/DeviceHealth');
+                    break;
+                case 'Terms of Service':
+                    router.push('/auth/TermsOfService');
+                    break;
+                default:
+                    break;
+            }
         }
     };
 
@@ -187,4 +207,3 @@ const styles = StyleSheet.create({
 });
 
 export default Settings;
-
