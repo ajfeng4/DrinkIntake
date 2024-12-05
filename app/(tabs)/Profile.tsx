@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     SafeAreaView,
     View,
@@ -8,30 +8,71 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import DrinkIntakeHeader from '@/components/DrinkIntakeHeader';
+import { supabase } from '@/supabaseClient';
+
+interface UserProfile {
+    first_name: string;
+    last_name: string;
+    gender: string;
+    age: number;
+    weight: string;
+    height: string;
+    pregnancy: string;
+}
 
 export default function Profile() {
     const router = useRouter();
+    const [profile, setProfile] = useState<UserProfile | null>(null);
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            const { data, error } = await supabase.auth.getUser();
+            if (error || !data.user) {
+                console.error('Error fetching user:', error?.message || 'No user found');
+                return;
+            }
+            const userId = data.user.id;
+            const { data: profileData, error: profileError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', userId)
+                .single();
+            if (profileError) {
+                console.error('Error fetching profile:', profileError.message);
+                return;
+            }
+            setProfile(profileData);
+        };
+        fetchProfile();
+    }, []);
 
     return (
         <SafeAreaView style={styles.safeArea}>
             <View style={styles.container}>
                 <DrinkIntakeHeader />
 
-
                 <View style={styles.profilePictureContainer}>
                     <Text style={styles.profilePictureText}>🙂</Text>
                 </View>
 
-                <Text style={styles.Name}>Jane Doe</Text>
-                <Text style={styles.userDetails}>Female</Text>
-                <Text style={styles.userDetails}>Rookie</Text>
-                <Text style={styles.userDetails}>40 years old</Text>
+                {profile && (
+                    <>
+                        <Text style={styles.Name}>{`${profile.first_name} ${profile.last_name}`}</Text>
+                        <Text style={styles.userDetails}>{profile.gender}</Text>
+                        <Text style={styles.userDetails}>{profile.weight}</Text>
+                        <Text style={styles.userDetails}>{profile.age} years old</Text>
+                        <Text style={styles.userDetails}>{profile.height}</Text>
+                        {profile.pregnancy !== 'None' && (
+                            <Text style={styles.userDetails}>{`Pregnancy: ${profile.pregnancy}`}</Text>
+                        )}
+                    </>
+                )}
 
                 <Text style={styles.achievementsText}>Met Weekly Objectives 3x</Text>
 
                 <TouchableOpacity
                     style={styles.editProfileButton}
-                    onPress={() => console.log('Edit Profile')}
+                    onPress={() => router.push('/ExploreScreen')}
                 >
                     <Text style={styles.editProfileButtonText}>Edit Profile</Text>
                 </TouchableOpacity>
