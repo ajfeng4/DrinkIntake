@@ -1,17 +1,13 @@
 import React, { useState } from 'react';
 import { View, TextInput, Alert, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { supabase } from '@/supabaseClient';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../../types/types';
-import { useNavigation } from '@react-navigation/native';
-
-type SignUpScreenNavigationProp = StackNavigationProp<RootStackParamList, 'SignUp'>;
+import { useRouter } from 'expo-router';
 
 export default function SignUp() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [selectedTab, setSelectedTab] = useState('email');
-    const navigation = useNavigation<SignUpScreenNavigationProp>();
+    const router = useRouter();
 
     const handleSignup = async () => {
         const { data, error } = await supabase.auth.signUp({
@@ -22,7 +18,7 @@ export default function SignUp() {
             Alert.alert('Signup error', error.message);
         } else if (data?.user) {
             Alert.alert('Signup successful!', 'Please check your email for verification.');
-            navigation.navigate('FirstAndLastName');
+            router.replace('/FirstAndLastName');
         }
     };
 
@@ -61,7 +57,7 @@ export default function SignUp() {
                         secureTextEntry
                         style={styles.input}
                     />
-                    <TouchableOpacity onPress={() => navigation.navigate('SignIn')}>
+                    <TouchableOpacity onPress={() => router.push('/auth/SignIn')}>
                         <Text style={styles.signupText}>Already have an account? Sign In</Text>
                     </TouchableOpacity>
                 </>
@@ -74,7 +70,7 @@ export default function SignUp() {
                         style={styles.input}
                         keyboardType="phone-pad"
                     />
-                    <TouchableOpacity onPress={() => navigation.navigate('SignIn')}>
+                    <TouchableOpacity onPress={() => router.push('/auth/SignIn')}>
                         <Text style={styles.signupText}>Already have an account? Sign In</Text>
                     </TouchableOpacity>
                 </>
@@ -184,4 +180,3 @@ const styles = StyleSheet.create({
         textAlign: 'left',
     },
 });
-
