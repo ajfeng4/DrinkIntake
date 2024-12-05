@@ -12,6 +12,8 @@ import { CartesianChart, Bar, useChartPressState } from "victory-native";
 import { Circle, useFont, vec } from "@shopify/react-native-skia";
 import { LinearGradient, Text as SKText } from "@shopify/react-native-skia";
 import { useDerivedValue } from "react-native-reanimated";
+import { useIsFocused } from '@react-navigation/native';
+import { User } from '@supabase/supabase-js';
 
 type StatisticsScreenProps = {
   navigation: StackNavigationProp<RootStackParamList, 'WaterIntakeStatistics'>;
@@ -44,11 +46,11 @@ export default function StatisticsScreen({ navigation }: StatisticsScreenProps) 
   const [selectedView, setSelectedView] = useState('Day');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [dropdownLayout, setDropdownLayout] = useState({ x: 0, y: 0, width: 0, height: 0 });
-  const dropdownRef = useRef(null);
+  const isFocused = useIsFocused();
 
   // Daily goal stats
   const [dailyGoal, setDailyGoal] = useState(4);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   const [currentIntake, setCurrentIntake] = useState(0);
 
   const [timeSpan, setTimeSpan] = useState('day'); // 'day', 'week', 'month', 'year'
@@ -92,24 +94,23 @@ export default function StatisticsScreen({ navigation }: StatisticsScreenProps) 
     fetchWeeklyCompletions();
   }, [dailyGoal]);
 
-  const getCurrentUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    setUser(user);
-    if (user) {
-      console.log('Current User ID:', user.id);
-      fetchUserGoal(user.id);
-    }
-  };
-  
   useEffect(() => {
-    getCurrentUser();
-  }, []);
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+
+    if (isFocused) {
+      getCurrentUser();
+    }
+  }, [isFocused]);
 
   useEffect(() => {
     if (user) {
       fetchTodaySwallowingCount(user.id);
+      fetchUserGoal(user.id);
     }
-  }, [user]);
+  },);
   
   // Add this function to fetch the user's goal
   const fetchUserGoal = async (userId: string) => {
@@ -127,7 +128,9 @@ export default function StatisticsScreen({ navigation }: StatisticsScreenProps) 
       }
 
       if (data && data.length > 0) {
-        setDailyGoal(data[0].volume);
+        const goalVolume = data[0].volume;
+        console.log('Current Goal Volume:', goalVolume); // Debugging line
+        setDailyGoal(goalVolume);
       }
     } catch (error) {
       console.error('Error in fetchUserGoal:', error);
