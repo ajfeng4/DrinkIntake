@@ -43,7 +43,7 @@ export default function Attributes() {
             console.error('Error saving attributes:', error.message);
             Alert.alert('Error', 'Failed to save your attributes.');
         } else {
-            router.push('/TermsOfService');
+            router.push('/auth/TermsOfService');
         }
     };
 

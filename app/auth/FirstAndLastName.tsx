@@ -29,7 +29,7 @@ export default function FirstAndLastName() {
             console.error('Error saving user data:', error.message);
             Alert.alert('Error', 'Failed to save your information.');
         } else {
-            router.replace('/Attributes');
+            router.replace('/auth/Attributes');
         }
     };
 
