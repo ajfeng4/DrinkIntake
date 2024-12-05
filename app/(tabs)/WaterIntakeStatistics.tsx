@@ -47,7 +47,8 @@ export default function StatisticsScreen({ navigation }: StatisticsScreenProps) 
   const dropdownRef = useRef(null);
 
   // Daily goal stats
-  const dailyGoal = 4;
+  const [dailyGoal, setDailyGoal] = useState(4);
+  const [user, setUser] = useState(null);
   const [currentIntake, setCurrentIntake] = useState(0);
 
   const [timeSpan, setTimeSpan] = useState('day'); // 'day', 'week', 'month', 'year'
@@ -56,10 +57,6 @@ export default function StatisticsScreen({ navigation }: StatisticsScreenProps) 
   // Add this state to store daily completions
   const [weeklyCompletions, setWeeklyCompletions] = useState(Array(7).fill(false));
 
-  useEffect(() => {
-    fetchTodaySwallowingCount();
-  }, []);
-  
   // Add this useEffect to fetch and check daily completions
   useEffect(() => {
     const fetchWeeklyCompletions = async () => {
@@ -95,7 +92,49 @@ export default function StatisticsScreen({ navigation }: StatisticsScreenProps) 
     fetchWeeklyCompletions();
   }, [dailyGoal]);
 
-  const fetchTodaySwallowingCount = async () => {
+  const getCurrentUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setUser(user);
+    if (user) {
+      console.log('Current User ID:', user.id);
+      fetchUserGoal(user.id);
+    }
+  };
+  
+  useEffect(() => {
+    getCurrentUser();
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchTodaySwallowingCount(user.id);
+    }
+  }, [user]);
+  
+  // Add this function to fetch the user's goal
+  const fetchUserGoal = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('goals')
+        .select('volume')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (error) {
+        console.error('Error fetching goal:', error);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        setDailyGoal(data[0].volume);
+      }
+    } catch (error) {
+      console.error('Error in fetchUserGoal:', error);
+    }
+  };
+
+  const fetchTodaySwallowingCount = async (userId) => {
     try {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -103,6 +142,7 @@ export default function StatisticsScreen({ navigation }: StatisticsScreenProps) 
       const { data, error } = await supabase
         .from('recordings')
         .select('prediction_class')
+        .eq('user_id', userId)
         .eq('prediction_class', 'Swallowing')
         .gte('created_at', today.toISOString())
         .lt('created_at', new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString());
@@ -127,17 +167,6 @@ export default function StatisticsScreen({ navigation }: StatisticsScreenProps) 
     setSelectedView(option);
     setIsDropdownOpen(false);
   };
-
-  // Add this after the existing imports
-  const weeklyData = [
-    { day: 'Mon', completed: true },
-    { day: 'Tue', completed: true },
-    { day: 'Wed', completed: true },
-    { day: 'Thu', completed: false },
-    { day: 'Fri', completed: true },
-    { day: 'Sat', completed: false },
-    { day: 'Sun', completed: false },
-  ];
   
   useEffect(() => {
     console.log('graphData updated:', graphData);
