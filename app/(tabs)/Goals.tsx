@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     SafeAreaView,
     View,
@@ -7,12 +7,15 @@ import {
     Switch,
     TextInput,
     TouchableOpacity,
+    Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import DrinkIntakeHeader from '@/components/DrinkIntakeHeader';
+import { supabase } from '@/supabaseClient';
 
 export default function Goals() {
     const router = useRouter();
+    const [user, setUser] = useState(null);
     const [repeatGoal, setRepeatGoal] = useState(1);
     const [startTime, setStartTime] = useState('08:00 PM');
     const [duration, setDuration] = useState(90);
@@ -21,9 +24,55 @@ export default function Goals() {
     const [customVolume, setCustomVolume] = useState('');
     const [selectedGoal, setSelectedGoal] = useState('Set your daily goal');
 
+    // Get current user on component mount
+    useEffect(() => {
+        getCurrentUser();
+    }, []);
+
+    const getCurrentUser = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        setUser(user);
+    };
+
     const handleVolumeChange = (volume: string) => {
         setCustomVolume(volume);
         setSelectedGoal(`Drink ${volume} ml a day`);
+    };
+
+    const handleSubmit = async () => {
+        if (!user) {
+            Alert.alert('Error', 'Please login first');
+            return;
+        }
+
+        if (!customVolume) {
+            Alert.alert('Error', 'Please set a volume goal');
+            return;
+        }
+
+        try {
+            const { data, error } = await supabase
+                .from('goals')
+                .insert([
+                    {
+                        user_id: user.id,
+                        volume: parseInt(customVolume),
+                        start_time: startTime,
+                        duration: duration,
+                        show_notifications: showNotifications,
+                        sound: sound,
+                        created_at: new Date().toISOString(),
+                    }
+                ]);
+
+            if (error) throw error;
+
+            Alert.alert('Success', 'Goal has been saved!');
+            router.back();
+        } catch (error) {
+            console.error('Error saving goal:', error.message);
+            Alert.alert('Error', 'Failed to save goal');
+        }
     };
 
     return (
@@ -82,7 +131,7 @@ export default function Goals() {
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={styles.submitButton}
-                        onPress={() => console.log('Submitted')}
+                        onPress={handleSubmit}
                     >
                         <Text style={styles.submitButtonText}>Submit</Text>
                     </TouchableOpacity>
