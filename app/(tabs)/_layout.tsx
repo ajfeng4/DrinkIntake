@@ -105,6 +105,17 @@ export default function TabLayout() {
                     tabBarItemStyle: { display: 'none' },
                 }}
             />
+            <Tabs.Screen
+                name="DeviceHealth"
+                options={{
+                    title: 'Device Health',
+                    tabBarIcon: ({ color, focused }) => (
+                        <TabBarIcon name={focused ? 'settings' : 'settings-outline'} color={color} />
+                    ),
+                    tabBarButton: () => null,
+                    tabBarItemStyle: { display: 'none' },
+                }}
+            />
         </Tabs>
     );
 }

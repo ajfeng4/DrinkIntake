@@ -106,6 +106,14 @@ export default function ExploreScreen() {
                     <SimpleLineIcons name="microphone" size={40} color="#328DD8" />
                     <Text style={styles.buttonText}>Profile</Text>
                 </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={styles.button}
+                    onPress={() => router.push('DeviceHealth')}
+                >
+                    <SimpleLineIcons name="microphone" size={40} color="#328DD8" />
+                    <Text style={styles.buttonText}>Device Health</Text>
+                </TouchableOpacity>
             </ScrollView>
         </SafeAreaView>
     );
