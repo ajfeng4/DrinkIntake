@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Modal, TouchableOpacity, FlatList, Text, StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import { useRouter } from 'expo-router';
+import { supabase } from '@/supabaseClient';
 
 type AlertItem = {
     date: string;
@@ -21,7 +22,25 @@ const alerts: AlertItem[] = [
 
 const DrinkIntakeHeader = () => {
     const [modalVisible, setModalVisible] = useState(false);
+    const [name, setName] = useState('Jane Doe');
     const router = useRouter();
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('first_name, last_name')
+                    .eq('id', user.id)
+                    .single();
+                if (data) {
+                    setName(`${data.first_name} ${data.last_name}`);
+                }
+            }
+        };
+        fetchProfile();
+    }, []);
 
     const toggleModal = () => {
         setModalVisible(!modalVisible);
@@ -46,7 +65,7 @@ const DrinkIntakeHeader = () => {
             <View style={styles.header}>
                 <View>
                     <ThemedText style={styles.headerSubtitle}>Stay hydrated!</ThemedText>
-                    <ThemedText style={styles.headerTitle}>Jane Doe</ThemedText>
+                    <ThemedText style={styles.headerTitle}>{name}</ThemedText>
                 </View>
                 <View style={styles.headerButtons}>
                     <TouchableOpacity style={styles.settingsIcon} onPress={openSettings}>
@@ -161,3 +180,4 @@ const styles = StyleSheet.create({
 });
 
 export default DrinkIntakeHeader;
+

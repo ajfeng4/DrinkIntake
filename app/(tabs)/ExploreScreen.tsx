@@ -103,7 +103,7 @@ export default function ExploreScreen() {
                     style={styles.button}
                     onPress={() => router.push('/Profile')}
                 >
-                    <SimpleLineIcons name="microphone" size={40} color="#328DD8" />
+                    <SimpleLineIcons name="user" size={40} color="#328DD8" />
                     <Text style={styles.buttonText}>Profile</Text>
                 </TouchableOpacity>
 
@@ -111,7 +111,7 @@ export default function ExploreScreen() {
                     style={styles.button}
                     onPress={() => router.push('DeviceHealth')}
                 >
-                    <SimpleLineIcons name="microphone" size={40} color="#328DD8" />
+                    <SimpleLineIcons name="earphones" size={40} color="#328DD8" />
                     <Text style={styles.buttonText}>Device Health</Text>
                 </TouchableOpacity>
             </ScrollView>
@@ -129,9 +129,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
     },
     description: {
-        fontSize: 16,
-        color: '#6c6c6c',
+        fontSize: 12,
+        color: '#328DD8',
         marginBottom: 30,
+        alignSelf: 'center',
     },
     button: {
         flexDirection: 'row',
