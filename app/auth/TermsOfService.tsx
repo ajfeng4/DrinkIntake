@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { supabase } from '@/supabaseClient';
-import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
+
 export default function TermsOfService() {
-    const navigation = useNavigation();
+    const router = useRouter();
     const [isChecked, setIsChecked] = useState(false);
 
     const toggleCheckbox = () => setIsChecked(!isChecked);
@@ -27,7 +28,7 @@ export default function TermsOfService() {
             console.error('Error updating terms acceptance:', error.message);
             Alert.alert('Error', 'Failed to save your acceptance.');
         } else {
-            navigation.replace('(tabs)');
+            router.replace('/(tabs)');
         }
     };
 

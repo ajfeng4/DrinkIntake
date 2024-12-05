@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { supabase } from '@/supabaseClient';
-import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 
 export default function Attributes() {
-    const navigation = useNavigation();
+    const router = useRouter();
     const [selectedAttributes, setSelectedAttributes] = useState<{
         ageRange: string;
         weight: string;
@@ -43,7 +43,7 @@ export default function Attributes() {
             console.error('Error saving attributes:', error.message);
             Alert.alert('Error', 'Failed to save your attributes.');
         } else {
-            navigation.navigate('TermsOfService');
+            router.push('/TermsOfService');
         }
     };
 

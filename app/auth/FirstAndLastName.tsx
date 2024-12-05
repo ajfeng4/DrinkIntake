@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { supabase } from '@/supabaseClient';
-import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 
 export default function FirstAndLastName() {
-    const navigation = useNavigation();
+    const router = useRouter();
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
 
@@ -29,7 +29,7 @@ export default function FirstAndLastName() {
             console.error('Error saving user data:', error.message);
             Alert.alert('Error', 'Failed to save your information.');
         } else {
-            navigation.navigate('Attributes');
+            router.replace('/Attributes');
         }
     };
 
